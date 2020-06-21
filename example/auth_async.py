@@ -34,8 +34,8 @@ def print_reply(reply):
         print('Access denied')
 
     print('Attributes returned by server:')
-    for key, value in reply.items():
-        print(f'{key}: {value}')
+    for i in reply.keys():
+        print("%s: %s" % (i, reply[i]))
 
 
 def initialize_transport(loop, client):
