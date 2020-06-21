@@ -154,7 +154,7 @@ class DatagramProtocolClient(asyncio.Protocol):
         return self.packet_id
 
     def __str__(self):
-        return f'DatagramProtocolClient(server?={self.server}, port={self.port})')
+        return f'DatagramProtocolClient(server={self.server}, port={self.port})'
 
     # Used as protocol_factory
     def __call__(self):
