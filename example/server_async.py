@@ -6,7 +6,7 @@ import traceback
 from os import path
 
 from pyrad.dictionary import Dictionary
-from pyrad.packet import AccessAccept
+from pyrad.packet import PacketCode
 from pyrad.server_async import ServerAsync
 from pyrad.server import RemoteHost
 
@@ -44,7 +44,7 @@ class FakeServer(ServerAsync):
             'Framed-IPv6-Prefix': 'fc66::/64'
         })
 
-        reply.code = AccessAccept
+        reply.code = PacketCode.AccessAccept
         protocol.send_response(reply, addr)
 
     def handle_acct_packet(self, protocol, packet, addr):

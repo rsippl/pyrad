@@ -1,12 +1,10 @@
 #!/usr/bin/env python3
 import sys
-
 from os import path
-
-import pyrad.packet
 
 from pyrad.client import Client
 from pyrad.dictionary import Dictionary
+from pyrad.packet import PacketCode
 
 
 def main(path_to_dictionary, coa_type, nas_identifier):
@@ -30,7 +28,7 @@ def main(path_to_dictionary, coa_type, nas_identifier):
     elif coa_type == 'dis':
         # create disconnect request
         request = client.CreateCoAPacket(
-            code=pyrad.packet.DisconnectRequest,
+            code=PacketCode.DisconnectRequest,
             **attributes)
     else:
         sys.exit(1)

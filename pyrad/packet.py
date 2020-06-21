@@ -4,30 +4,34 @@
 #
 # A RADIUS packet as defined in RFC 2138
 
-from collections import OrderedDict
 import hashlib
 import hmac
 import secrets
 import struct
+from collections import OrderedDict
+from enum import IntEnum
+
 from pyrad import tools
 
 md5_constructor = hashlib.md5
 
-# Packet codes
-AccessRequest = 1
-AccessAccept = 2
-AccessReject = 3
-AccountingRequest = 4
-AccountingResponse = 5
-AccessChallenge = 11
-StatusServer = 12
-StatusClient = 13
-DisconnectRequest = 40
-DisconnectACK = 41
-DisconnectNAK = 42
-CoARequest = 43
-CoAACK = 44
-CoANAK = 45
+
+class PacketCode(IntEnum):
+    AccessRequest = 1
+    AccessAccept = 2
+    AccessReject = 3
+    AccountingRequest = 4
+    AccountingResponse = 5
+    AccessChallenge = 11
+    StatusServer = 12
+    StatusClient = 13
+    DisconnectRequest = 40
+    DisconnectACK = 41
+    DisconnectNAK = 42
+    CoARequest = 43
+    CoAACK = 44
+    CoANAK = 45
+
 
 # Use cryptographic-safe random generator as provided by the OS.
 random_generator = secrets.SystemRandom()
@@ -113,7 +117,7 @@ class Packet(OrderedDict):
         if self.id is None:
             self.id = self.CreateID()
 
-        if self.authenticator is None and self.code == AccessRequest:
+        if self.authenticator is None and self.code == PacketCode.AccessRequest:
             self.authenticator = self.CreateAuthenticator()
             self._refresh_message_authenticator()
 
@@ -132,8 +136,8 @@ class Packet(OrderedDict):
                              (20 + len(attr)))
 
         hmac_constructor.update(header[0:4])
-        if self.code in (AccountingRequest, DisconnectRequest,
-                         CoARequest, AccountingResponse):
+        if self.code in (PacketCode.AccountingRequest, PacketCode.DisconnectRequest,
+                         PacketCode.CoARequest, PacketCode.AccountingResponse):
             hmac_constructor.update(16 * b'\00')
         else:
             # NOTE: self.authenticator on reply packet is initialized
@@ -178,13 +182,13 @@ class Packet(OrderedDict):
 
         hmac_constructor = hmac.new(key, digestmod=hashlib.md5)
         hmac_constructor.update(header)
-        if self.code in (AccountingRequest, DisconnectRequest,
-                         CoARequest, AccountingResponse):
-            if original_code is None or original_code != StatusServer:
+        if self.code in (PacketCode.AccountingRequest, PacketCode.DisconnectRequest,
+                         PacketCode.CoARequest, PacketCode.AccountingResponse):
+            if original_code is None or original_code != PacketCode.StatusServer:
                 # TODO: Handle Status-Server response correctly.
                 hmac_constructor.update(16 * b'\00')
-        elif self.code in (AccessAccept, AccessChallenge,
-                           AccessReject):
+        elif self.code in (PacketCode.AccessAccept, PacketCode.AccessChallenge,
+                           PacketCode.AccessReject):
             if original_authenticator is None:
                 if self.authenticator:
                     # NOTE: self.authenticator on reply packet is initialized
@@ -369,8 +373,8 @@ class Packet(OrderedDict):
         :return: raw packet
         :rtype:  string
         """
-        assert(self.authenticator)
-        assert(self.secret is not None)
+        assert (self.authenticator)
+        assert (self.secret is not None)
 
         if self.message_authenticator:
             self._refresh_message_authenticator()
@@ -409,7 +413,7 @@ class Packet(OrderedDict):
     def _PktEncodeAttribute(self, key, value):
         if isinstance(key, tuple):
             value = struct.pack('!L', key[0]) + \
-                self._PktEncodeAttribute(key[1], value)
+                    self._PktEncodeAttribute(key[1], value)
             key = 26
 
         return struct.pack('!BB', key, (len(value) + 2)) + value
@@ -477,10 +481,10 @@ class Packet(OrderedDict):
         sumlength = 4 + length
         while len(data) > sumlength:
             try:
-                atype, length = struct.unpack('!BB', data[sumlength:sumlength+2])[0:2]
+                atype, length = struct.unpack('!BB', data[sumlength:sumlength + 2])[0:2]
             except:
                 return [(26, data)]
-            tlvs.append(((vendor, atype), data[sumlength+2:sumlength+length]))
+            tlvs.append(((vendor, atype), data[sumlength + 2:sumlength + length]))
             sumlength += length
         return tlvs
 
@@ -489,8 +493,8 @@ class Packet(OrderedDict):
         loc = 0
 
         while loc < len(data):
-            atype, length = struct.unpack('!BB', data[loc:loc+2])[0:2]
-            sub_attributes.setdefault(atype, []).append(data[loc+2:loc+length])
+            atype, length = struct.unpack('!BB', data[loc:loc + 2])[0:2]
+            sub_attributes.setdefault(atype, []).append(data[loc + 2:loc + length])
             loc += length
 
     def DecodePacket(self, packet):
@@ -502,7 +506,7 @@ class Packet(OrderedDict):
 
         try:
             (self.code, self.id, length, self.authenticator) = \
-                    struct.unpack('!BBH16s', packet[0:20])
+                struct.unpack('!BBH16s', packet[0:20])
 
         except struct.error:
             raise PacketError('Packet header is corrupt')
@@ -575,7 +579,7 @@ class Packet(OrderedDict):
 
 
 class AuthPacket(Packet):
-    def __init__(self, code=AccessRequest, id=None, secret=b'',
+    def __init__(self, code=PacketCode.AccessRequest, id=None, secret=b'',
                  authenticator=None, auth_type='pap', **attributes):
         """Constructor
 
@@ -603,7 +607,7 @@ class AuthPacket(Packet):
         makes sure the authenticator and secret are copied over
         to the new instance.
         """
-        return AuthPacket(AccessAccept, self.id,
+        return AuthPacket(PacketCode.AccessAccept, self.id,
                           self.secret, self.authenticator, dict=self.dict,
                           auth_type=self.auth_type, **attributes)
 
@@ -637,9 +641,9 @@ class AuthPacket(Packet):
                 digestmod=hashlib.md5
             ).digest()
             return (
-                header
-                + attr
-                + struct.pack('!BB16s', 80, struct.calcsize('!BB16s'), digest)
+                    header
+                    + attr
+                    + struct.pack('!BB16s', 80, struct.calcsize('!BB16s'), digest)
             )
 
         header = struct.pack('!BBH16s', self.code, self.id,
@@ -734,7 +738,7 @@ class AuthPacket(Packet):
         :return: True if verification failed else False
         :rtype: boolean
         """
-        assert(self.raw_packet)
+        assert (self.raw_packet)
         hash = md5_constructor(self.raw_packet[0:4] + 16 * b'\x00' +
                                self.raw_packet[20:] + self.secret).digest()
         return hash == self.authenticator
@@ -745,7 +749,7 @@ class AcctPacket(Packet):
     of the generic :obj:`Packet` class for accounting packets.
     """
 
-    def __init__(self, code=AccountingRequest, id=None, secret=b'',
+    def __init__(self, code=PacketCode.AccountingRequest, id=None, secret=b'',
                  authenticator=None, **attributes):
         """Constructor
 
@@ -769,7 +773,7 @@ class AcctPacket(Packet):
         makes sure the authenticator and secret are copied over
         to the new instance.
         """
-        return AcctPacket(AccountingResponse, self.id,
+        return AcctPacket(PacketCode.AccountingResponse, self.id,
                           self.secret, self.authenticator, dict=self.dict,
                           **attributes)
 
@@ -779,7 +783,7 @@ class AcctPacket(Packet):
         :return: False if verification failed else True
         :rtype: boolean
         """
-        assert(self.raw_packet)
+        assert (self.raw_packet)
 
         hash = md5_constructor(self.raw_packet[0:4] + 16 * b'\x00' +
                                self.raw_packet[20:] + self.secret).digest()
@@ -816,7 +820,7 @@ class CoAPacket(Packet):
     of the generic :obj:`Packet` class for CoA packets.
     """
 
-    def __init__(self, code=CoARequest, id=None, secret=b'',
+    def __init__(self, code=PacketCode.CoARequest, id=None, secret=b'',
                  authenticator=None, **attributes):
         """Constructor
 
@@ -840,7 +844,7 @@ class CoAPacket(Packet):
         makes sure the authenticator and secret are copied over
         to the new instance.
         """
-        return CoAPacket(CoAACK, self.id,
+        return CoAPacket(PacketCode.CoAACK, self.id,
                          self.secret, self.authenticator, dict=self.dict,
                          **attributes)
 
@@ -850,7 +854,7 @@ class CoAPacket(Packet):
         :return: False if verification failed else True
         :rtype: boolean
         """
-        assert(self.raw_packet)
+        assert (self.raw_packet)
         hash = md5_constructor(self.raw_packet[0:4] + 16 * b'\x00' +
                                self.raw_packet[20:] + self.secret).digest()
         return hash == self.authenticator

@@ -3,7 +3,7 @@ import logging
 
 from os import path
 
-import pyrad.packet
+from pyrad.packet import PacketCode
 
 from pyrad import server
 from pyrad.dictionary import Dictionary
@@ -29,7 +29,7 @@ class FakeServer(server.Server):
             'Framed-IPv6-Prefix': 'fc66::/64'
         })
 
-        reply.code = pyrad.packet.AccessAccept
+        reply.code = PacketCode.AccessAccept
         self.SendReplyPacket(packet.fd, reply)
 
     def HandleAcctPacket(self, packet):

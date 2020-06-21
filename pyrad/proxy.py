@@ -6,7 +6,7 @@
 
 from pyrad.server import ServerPacketError
 from pyrad.server import Server
-from pyrad import packet
+from pyrad.packet import PacketCode
 import select
 import socket
 
@@ -41,8 +41,8 @@ class Proxy(Server):
             raise ServerPacketError('Received packet from unknown host')
         pkt.secret = self.hosts[pkt.source[0]].secret
 
-        if pkt.code not in [packet.AccessAccept, packet.AccessReject,
-                            packet.AccountingResponse]:
+        if pkt.code not in [PacketCode.AccessAccept, PacketCode.AccessReject,
+                            PacketCode.AccountingResponse]:
             raise ServerPacketError('Received non-response on proxy socket')
 
     def _ProcessInput(self, fd):

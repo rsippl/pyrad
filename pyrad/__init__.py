@@ -13,7 +13,7 @@ Here is an example of doing a authentication request::
   srv = Client(server="radius.my.domain", secret="s3cr3t",
     dict = Dictionary("dicts/dictionary", "dictionary.acc"))
 
-  req = srv.CreatePacket(code=pyrad.packet.AccessRequest,
+  req = srv.CreatePacket(code=PacketCode.AccessRequest,
         User_Name = "wichert", NAS_Identifier="localhost")
   req["User-Password"] = req.PwCrypt("password")
 

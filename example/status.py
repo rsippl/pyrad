@@ -1,13 +1,12 @@
 #!/usr/bin/env python3
 import socket
 import sys
-
 from os import path
 
-import pyrad.packet
-
+import pyrad
 from pyrad.client import Client
 from pyrad.dictionary import Dictionary
+from pyrad.packet import PacketCode
 
 
 def main(path_to_dictionary):
@@ -17,7 +16,7 @@ def main(path_to_dictionary):
                  dict=Dictionary(path_to_dictionary))
 
     req = srv.CreateAuthPacket(
-        code=pyrad.packet.StatusServer,
+        code=PacketCode.StatusServer,
         FreeRADIUS_Statistics_Type='All',
     )
     req.add_message_authenticator()

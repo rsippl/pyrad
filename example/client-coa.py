@@ -4,12 +4,10 @@
 #
 
 import sys
-
 from os import path
 
-import pyrad.packet
-
 from pyrad.dictionary import Dictionary
+from pyrad.packet import PacketCode
 from pyrad.server import Server, RemoteHost
 
 
@@ -33,8 +31,8 @@ class FakeCoA(Server):
 
         reply = self.CreateReplyPacket(packet)
         # try ACK or NACK
-        # reply.code = packet.CoANAK
-        reply.code = packet.CoAACK
+        # reply.code = PacketCode.CoANAK
+        reply.code = PacketCode.CoAACK
         self.SendReplyPacket(packet.fd, reply)
 
     def HandleDisconnectPacket(self, packet):
@@ -43,8 +41,8 @@ class FakeCoA(Server):
 
         reply = self.CreateReplyPacket(packet)
         # try ACK or NACK
-        # reply.code = packet.DisconnectNAK
-        reply.code = pyrad.packet.DisconnectACK
+        # reply.code = PacketCode.DisconnectNAK
+        reply.code = PacketCode.DisconnectACK
         self.SendReplyPacket(packet.fd, reply)
 
 

@@ -6,6 +6,7 @@ import select
 import socket
 from pyrad import host
 from pyrad import packet
+from pyrad.packet import PacketCode
 import logging
 
 
@@ -214,7 +215,7 @@ class Server(host.Host):
         :type  pkt: Packet class instance
         """
         self._AddSecret(pkt)
-        if pkt.code != packet.AccessRequest:
+        if pkt.code != PacketCode.AccessRequest:
             raise ServerPacketError(
                 'Received non-authentication packet on authentication port')
         self.HandleAuthPacket(pkt)
@@ -229,8 +230,8 @@ class Server(host.Host):
         :type  pkt: Packet class instance
         """
         self._AddSecret(pkt)
-        if pkt.code not in [packet.AccountingRequest,
-                            packet.AccountingResponse]:
+        if pkt.code not in [PacketCode.AccountingRequest,
+                            PacketCode.AccountingResponse]:
             raise ServerPacketError(
                     'Received non-accounting packet on accounting port')
         self.HandleAcctPacket(pkt)
@@ -246,9 +247,9 @@ class Server(host.Host):
         """
         self._AddSecret(pkt)
         pkt.secret = self.hosts[pkt.source[0]].secret
-        if pkt.code == packet.CoARequest:
+        if pkt.code == PacketCode.CoARequest:
             self.HandleCoaPacket(pkt)
-        elif pkt.code == packet.DisconnectRequest:
+        elif pkt.code == PacketCode.DisconnectRequest:
             self.HandleDisconnectPacket(pkt)
         else:
             raise ServerPacketError('Received non-coa packet on coa port')

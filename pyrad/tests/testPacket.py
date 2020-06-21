@@ -6,6 +6,7 @@ from pyrad import packet
 from pyrad.client import Client
 from pyrad.tests import home
 from pyrad.dictionary import Dictionary
+from pyrad.packet import PacketCode
 
 import hashlib
 md5_constructor = hashlib.md5
@@ -391,7 +392,7 @@ class AuthPacketConstructionTests(PacketConstructionTests):
 
     def testConstructorDefaults(self):
         pkt = self.klass()
-        self.assertEqual(pkt.code, packet.AccessRequest)
+        self.assertEqual(pkt.code, PacketCode.AccessRequest)
 
 
 class AuthPacketTests(unittest.TestCase):
@@ -404,7 +405,7 @@ class AuthPacketTests(unittest.TestCase):
 
     def testCreateReply(self):
         reply = self.packet.CreateReply(**{'Test-Integer': 10})
-        self.assertEqual(reply.code, packet.AccessAccept)
+        self.assertEqual(reply.code, PacketCode.AccessAccept)
         self.assertEqual(reply.id, self.packet.id)
         self.assertEqual(reply.secret, self.packet.secret)
         self.assertEqual(reply.authenticator, self.packet.authenticator)
@@ -458,7 +459,7 @@ class AuthPacketChapTests(unittest.TestCase):
         chap_password = chap_id + md5_constructor(
                 chap_id + b'test_password' + chap_challenge).digest()
         pkt = self.client.CreateAuthPacket(
-            code=packet.AccessChallenge,
+            code=PacketCode.AccessChallenge,
             authenticator=b'ABCDEFG',
             User_Name='test_name',
             CHAP_Challenge=chap_challenge,
@@ -487,7 +488,7 @@ class AcctPacketConstructionTests(PacketConstructionTests):
 
     def testConstructorDefaults(self):
         pkt = self.klass()
-        self.assertEqual(pkt.code, packet.AccountingRequest)
+        self.assertEqual(pkt.code, PacketCode.AccountingRequest)
 
     def testConstructorRawPacket(self):
         raw = (b'\x00\x00\x00\x14\xb0\x5e\x4b\xfb\xcc\x1c'
@@ -506,7 +507,7 @@ class AcctPacketTests(unittest.TestCase):
 
     def testCreateReply(self):
         reply = self.packet.CreateReply(**{'Test-Integer': 10})
-        self.assertEqual(reply.code, packet.AccountingResponse)
+        self.assertEqual(reply.code, PacketCode.AccountingResponse)
         self.assertEqual(reply.id, self.packet.id)
         self.assertEqual(reply.secret, self.packet.secret)
         self.assertEqual(reply.authenticator, self.packet.authenticator)

@@ -4,10 +4,9 @@ import sys
 
 from os import path
 
-import pyrad.packet
-
-from pyrad.client import Client
+from pyrad.client import Client, Timeout
 from pyrad.dictionary import Dictionary
+from pyrad.packet import PacketCode
 
 
 def main(path_to_dictionary):
@@ -16,7 +15,7 @@ def main(path_to_dictionary):
                  dict=Dictionary(path_to_dictionary))
 
     req = srv.CreateAuthPacket(
-        code=pyrad.packet.AccessRequest,
+        code=PacketCode.AccessRequest,
         **{
             'User-Name': 'wichert',
             'NAS-IP-Address': '192.168.1.10',
@@ -31,14 +30,14 @@ def main(path_to_dictionary):
     try:
         print('Sending authentication request')
         reply = srv.SendPacket(req)
-    except pyrad.client.Timeout:
+    except Timeout:
         print('RADIUS server does not reply')
         sys.exit(1)
     except socket.error as error:
         print('Network error: ' + error[1])
         sys.exit(1)
 
-    if reply.code == pyrad.packet.AccessAccept:
+    if reply.code == PacketCode.AccessAccept:
         print('Access accepted')
     else:
         print('Access denied')

@@ -15,6 +15,8 @@ from pyrad import dictionary
 from pyrad import host
 from pyrad import packet
 
+from pyrad.packet import PacketCode
+
 
 class PacketError(Exception):
     """Exception class for bogus packets
@@ -59,7 +61,7 @@ class RADIUSAccess(RADIUS):
         self.CreateAuthPacket(**kwargs)
 
     def processPacket(self, pkt):
-        if pkt.code != packet.AccessRequest:
+        if pkt.code != PacketCode.AccessRequest:
             raise PacketError(
                     'non-AccessRequest packet on authentication socket')
 
@@ -69,7 +71,7 @@ class RADIUSAccounting(RADIUS):
         self.CreateAcctPacket(**kwargs)
 
     def processPacket(self, pkt):
-        if pkt.code != packet.AccountingRequest:
+        if pkt.code != PacketCode.AccountingRequest:
             raise PacketError(
                     'non-AccountingRequest packet on authentication socket')
 

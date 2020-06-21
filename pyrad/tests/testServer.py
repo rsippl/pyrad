@@ -11,8 +11,7 @@ from pyrad.tests.mock import MockPoll
 from pyrad.tests.mock import MockSocket
 from pyrad.tests.mock import MockClassMethod
 from pyrad.tests.mock import UnmockClassMethods
-from pyrad.packet import AccessRequest
-from pyrad.packet import AccountingRequest
+from pyrad.packet import PacketCode
 
 
 class TrivialObject:
@@ -156,7 +155,7 @@ class AuthPacketHandlingTests(unittest.TestCase):
         self.server.hosts['host'] = TrivialObject()
         self.server.hosts['host'].secret = 'supersecret'
         self.packet = TrivialObject()
-        self.packet.code = AccessRequest
+        self.packet.code = PacketCode.AccessRequest
         self.packet.source = ('host', 'port')
 
     def testHandleAuthPacketUnknownHost(self):
@@ -169,7 +168,7 @@ class AuthPacketHandlingTests(unittest.TestCase):
             self.fail()
 
     def testHandleAuthPacketWrongPort(self):
-        self.packet.code = AccountingRequest
+        self.packet.code = PacketCode.AccountingRequest
         try:
             self.server._HandleAuthPacket(self.packet)
         except ServerPacketError as e:
@@ -195,7 +194,7 @@ class AcctPacketHandlingTests(unittest.TestCase):
         self.server.hosts['host'] = TrivialObject()
         self.server.hosts['host'].secret = 'supersecret'
         self.packet = TrivialObject()
-        self.packet.code = AccountingRequest
+        self.packet.code = PacketCode.AccountingRequest
         self.packet.source = ('host', 'port')
 
     def testHandleAcctPacketUnknownHost(self):
@@ -208,7 +207,7 @@ class AcctPacketHandlingTests(unittest.TestCase):
             self.fail()
 
     def testHandleAcctPacketWrongPort(self):
-        self.packet.code = AccessRequest
+        self.packet.code = PacketCode.AccessRequest
         try:
             self.server._HandleAcctPacket(self.packet)
         except ServerPacketError as e:

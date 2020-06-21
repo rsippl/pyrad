@@ -8,7 +8,7 @@ from os import path
 
 from pyrad.client_async import ClientAsync
 from pyrad.dictionary import Dictionary
-from pyrad.packet import AccessAccept
+from pyrad.packet import PacketCode
 
 logging.basicConfig(level='DEBUG',
                     format='%(asctime)s [%(levelname)-8s] %(message)s')
@@ -28,7 +28,7 @@ def create_request(client, user):
 
 
 def print_reply(reply):
-    if reply.code == AccessAccept:
+    if reply.code == PacketCode.AccessAccept:
         print('Access accepted')
     else:
         print('Access denied')

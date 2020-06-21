@@ -4,18 +4,11 @@
 
 import asyncio
 import logging
-
 from abc import abstractmethod, ABCMeta
-from enum import Enum
 from datetime import datetime
-from pyrad.packet import (
-    Packet, AccessAccept, AccessReject,
-    AccountingRequest, AccountingResponse,
-    DisconnectACK, DisconnectNAK, DisconnectRequest, CoARequest,
-    CoAACK, CoANAK, AccessRequest, AuthPacket, AcctPacket, CoAPacket,
-    PacketError
-)
+from enum import Enum
 
+from pyrad.packet import Packet, PacketCode, AuthPacket, AcctPacket, CoAPacket, PacketError
 from pyrad.server import ServerPacketError
 
 
@@ -61,22 +54,27 @@ class DatagramProtocolServer(asyncio.Protocol):
         elif '0.0.0.0' in self.hosts:
             remote_host = self.hosts['0.0.0.0']
         else:
-            self.logger.warn('[%s:%d] Drop package from unknown source %s', self.ip, self.port, addr)
+            self.logger.warn('[%s:%d] Drop package from unknown source %s', self.ip, self.port,
+                             addr)
             return
 
         try:
-            self.logger.debug('[%s:%d] Received from %s packet: %s', self.ip, self.port, addr, data.hex())
+            self.logger.debug('[%s:%d] Received from %s packet: %s', self.ip, self.port, addr,
+                              data.hex())
             req = Packet(packet=data, dict=self.server.dict)
         except Exception as exc:
             self.logger.error('[%s:%d] Error on decode packet: %s', self.ip, self.port, exc)
             return
 
         try:
-            if req.code in (AccountingResponse, AccessAccept, AccessReject, CoANAK, CoAACK, DisconnectNAK, DisconnectACK):
+            if req.code in (
+                    PacketCode.AccountingResponse, PacketCode.AccessAccept, PacketCode.AccessReject,
+                    PacketCode.CoANAK, PacketCode.CoAACK, PacketCode.DisconnectNAK,
+                    PacketCode.DisconnectACK):
                 raise ServerPacketError(f'Invalid response packet {req.code}')
 
             elif self.server_type == ServerType.Auth:
-                if req.code != AccessRequest:
+                if req.code != PacketCode.AccessRequest:
                     raise ServerPacketError('Received non-auth packet on auth port')
                 req = AuthPacket(secret=remote_host.secret,
                                  dict=self.server.dict,
@@ -86,7 +84,7 @@ class DatagramProtocolServer(asyncio.Protocol):
                         raise PacketError('Packet verification failed')
 
             elif self.server_type == ServerType.Coa:
-                if req.code != DisconnectRequest and req.code != CoARequest:
+                if req.code != PacketCode.DisconnectRequest and req.code != PacketCode.CoARequest:
                     raise ServerPacketError('Received non-coa packet on coa port')
                 req = CoAPacket(secret=remote_host.secret,
                                 dict=self.server.dict,
@@ -97,7 +95,7 @@ class DatagramProtocolServer(asyncio.Protocol):
 
             elif self.server_type == ServerType.Acct:
 
-                if req.code != AccountingRequest:
+                if req.code != PacketCode.AccountingRequest:
                     raise ServerPacketError('Received non-acct packet on acct port')
                 req = AcctPacket(secret=remote_host.secret,
                                  dict=self.server.dict,
@@ -112,10 +110,12 @@ class DatagramProtocolServer(asyncio.Protocol):
             if self.server.debug:
                 self.logger.exception('[%s:%d] Error for packet from %s', self.ip, self.port, addr)
             else:
-                self.logger.error('[%s:%d] Error for packet from %s: %s', self.ip, self.port, addr, exc)
+                self.logger.error('[%s:%d] Error for packet from %s: %s', self.ip, self.port, addr,
+                                  exc)
 
         process_date = datetime.utcnow()
-        self.logger.debug('[%s:%d] Request from %s processed in %d ms', self.ip, self.port, addr, (process_date-receive_date).microseconds/1000)
+        self.logger.debug('[%s:%d] Request from %s processed in %d ms', self.ip, self.port, addr,
+                          (process_date - receive_date).microseconds / 1000)
 
     def error_received(self, exc):
         self.logger.error('[%s:%d] Error received: %s', self.ip, self.port, exc)
@@ -175,10 +175,10 @@ class ServerAsync(metaclass=ABCMeta):
             elif protocol.server_type == ServerType.Auth:
                 self.handle_auth_packet(protocol, req, addr)
             elif protocol.server_type == ServerType.Coa and \
-                    req.code == CoARequest:
+                    req.code == PacketCode.CoARequest:
                 self.handle_coa_packet(protocol, req, addr)
             elif protocol.server_type == ServerType.Coa and \
-                    req.code == DisconnectRequest:
+                    req.code == PacketCode.DisconnectRequest:
                 self.handle_disconnect_packet(protocol, req, addr)
             else:
                 self.logger.error('[%s:%s] Unexpected request found', protocol.ip, protocol.port)
