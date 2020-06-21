@@ -35,7 +35,7 @@ def EncodeIPv6Prefix(addr):
     if not isinstance(addr, str):
         raise TypeError('IPv6 Prefix has to be a string')
     ip = ipaddress.IPv6Network(addr)
-    return struct.pack('2B', *[0, ip.prefixlen]) + ip.network_address.packed
+    return struct.pack('BB', 0, ip.prefixlen) + ip.network_address.packed
 
 
 def EncodeIPv6Address(addr):
@@ -100,7 +100,7 @@ def EncodeAscendBinary(string):
         elif key in ('src', 'dst'):
             ip = ipaddress.ip_network(value)
             terms[key] = ip.network_address.packed
-            terms[key+'l'] = struct.pack('B', ip.prefixlen)
+            terms[key + 'l'] = struct.pack('B', ip.prefixlen)
         elif key in ('sport', 'dport'):
             terms[key] = struct.pack('!H', int(value))
         elif key in ('sportq', 'dportq', 'proto'):
@@ -153,14 +153,16 @@ def DecodeAddress(addr):
 
 
 def DecodeIPv6Prefix(addr):
-    addr = addr + b'\x00' * (18-len(addr))
+    addr = addr + b'\x00' * (18 - len(addr))
     prefix = addr[:2]
     addr = addr[2:]
-    return str(ipaddress.ip_network((prefix, addr)))
+    _, prefix = struct.unpack('BB', prefix)
+    network = ipaddress.IPv6Network((addr, prefix))
+    return str(network)
 
 
 def DecodeIPv6Address(addr):
-    addr = addr + b'\x00' * (16-len(addr))
+    addr = addr + b'\x00' * (16 - len(addr))
     return str(ipaddress.IPv6Address(addr))
 
 
