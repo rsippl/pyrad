@@ -1,7 +1,3 @@
-# curved.py
-#
-# Copyright 2002 Wichert Akkerman <wichert@wiggy.net>
-
 """Twisted integration code
 """
 

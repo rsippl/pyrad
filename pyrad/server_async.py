@@ -1,7 +1,3 @@
-# server_async.py
-#
-# Copyright 2018-2019 Geaaru <geaaru@gmail.com>
-
 import asyncio
 import logging
 from abc import abstractmethod, ABCMeta

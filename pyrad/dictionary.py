@@ -1,6 +1,3 @@
-# dictionary.py
-#
-# Copyright 2002,2005,2007,2016 Wichert Akkerman <wichert@wiggy.net>
 """
 RADIUS uses dictionaries to define the attributes that can
 be used in packets. The Dictionary class stores the attribute

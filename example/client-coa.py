@@ -1,7 +1,4 @@
 #!/usr/bin/env python3
-#
-# Copyright 6WIND, 2017
-#
 
 import sys
 from os import path

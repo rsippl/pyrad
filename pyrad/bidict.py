@@ -1,5 +1,3 @@
-# bidict.py
-#
 # Bidirectional map
 
 

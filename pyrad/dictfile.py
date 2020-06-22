@@ -1,7 +1,3 @@
-# dictfile.py
-#
-# Copyright 2009 Kristoffer Gronlund <kristoffer.gronlund@purplescout.se>
-
 """ Dictionary File
 
 Implements an iterable file format that handles the

@@ -1,7 +1,3 @@
-# proxy.py
-#
-# Copyright 2005,2007 Wichert Akkerman <wichert@wiggy.net>
-#
 # A RADIUS proxy as defined in RFC 2138
 
 import select

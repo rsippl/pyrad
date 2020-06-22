@@ -1,6 +1,5 @@
-# tools.py
-#
 # Utility functions
+
 import binascii
 import ipaddress
 import struct
