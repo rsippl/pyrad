@@ -7,3 +7,4 @@ pyrad.egg-info/
 *__pycache__
 *.egg/
 *.log
+.python-version
