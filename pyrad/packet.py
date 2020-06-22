@@ -4,16 +4,14 @@
 #
 # A RADIUS packet as defined in RFC 2138
 
-import hashlib
 import hmac
 import secrets
 import struct
 from collections import OrderedDict
 from enum import IntEnum
+from hashlib import md5
 
 from pyrad import tools
-
-md5_constructor = hashlib.md5
 
 
 class PacketCode(IntEnum):
@@ -126,7 +124,7 @@ class Packet(OrderedDict):
         return self.message_authenticator
 
     def _refresh_message_authenticator(self):
-        hmac_constructor = hmac.new(self.secret, digestmod=hashlib.md5)
+        hmac_constructor = hmac.new(self.secret, digestmod=md5)
 
         # Maintain a zero octets content for md5 and hmac calculation.
         self['Message-Authenticator'] = 16 * b'\00'
@@ -180,7 +178,7 @@ class Packet(OrderedDict):
         header = struct.pack('!BBH', self.code, self.id,
                              (20 + len(attr)))
 
-        hmac_constructor = hmac.new(key, digestmod=hashlib.md5)
+        hmac_constructor = hmac.new(key, digestmod=md5)
         hmac_constructor.update(header)
         if self.code in (PacketCode.ACCOUNTING_REQUEST, PacketCode.DISCONNECT_REQUEST,
                          PacketCode.COA_REQUEST, PacketCode.ACCOUNTING_RESPONSE):
@@ -247,11 +245,11 @@ class Packet(OrderedDict):
             tag = '0' if tag == '' else tag
             tag = struct.pack('B', int(tag))
             if attr.type == "integer":
-                return (key, [tag + self._encode_value(attr, v)[1:] for v in values])
+                return key, [tag + self._encode_value(attr, v)[1:] for v in values]
             else:
-                return (key, [tag + self._encode_value(attr, v) for v in values])
+                return key, [tag + self._encode_value(attr, v) for v in values]
         else:
-            return (key, [self._encode_value(attr, v) for v in values])
+            return key, [self._encode_value(attr, v) for v in values]
 
     def _encode_key(self, key):
         if not isinstance(key, str):
@@ -260,7 +258,7 @@ class Packet(OrderedDict):
         attr = self.dict.attributes[key]
         # sub attribute keys don't need vendor
         if attr.vendor and not attr.is_sub_attribute:
-            return (self.dict.vendors.get_forward(attr.vendor), attr.code)
+            return self.dict.vendors.get_forward(attr.vendor), attr.code
         else:
             return attr.code
 
@@ -382,8 +380,7 @@ class Packet(OrderedDict):
         attr = self._pkt_encode_attributes()
         header = struct.pack('!BBH', self.code, self.id, (20 + len(attr)))
 
-        authenticator = md5_constructor(header[0:4] + self.authenticator
-                                        + attr + self.secret).digest()
+        authenticator = md5(header[0:4] + self.authenticator + attr + self.secret).digest()
 
         return header + authenticator + attr
 
@@ -403,8 +400,7 @@ class Packet(OrderedDict):
         #  response attributes if any, followed by the shared secret.  The
         #  resulting 16 octet MD5 hash value is stored in the Authenticator
         # field of the Accounting-Response packet.
-        hash = md5_constructor(rawreply[0:4] + self.authenticator +
-                               attr + self.secret).digest()
+        hash = md5(rawreply[0:4] + self.authenticator + attr + self.secret).digest()
 
         if hash != rawreply[4:20]:
             return False
@@ -569,7 +565,7 @@ class Packet(OrderedDict):
 
         last = self.authenticator + result
         while buf:
-            cur_hash = md5_constructor(self.secret + last).digest()
+            cur_hash = md5(self.secret + last).digest()
             for b, h in zip(buf, cur_hash):
                 result += bytes([b ^ h])
             last = result[-16:]
@@ -638,7 +634,7 @@ class AuthPacket(Packet):
                 header
                 + attr
                 + struct.pack('!BB16s', 80, struct.calcsize('!BB16s'), b''),
-                digestmod=hashlib.md5
+                digestmod=md5
             ).digest()
             return (
                     header
@@ -697,7 +693,7 @@ class AuthPacket(Packet):
         last = self.authenticator
 
         while buf:
-            cur_hash = md5_constructor(self.secret + last).digest()
+            cur_hash = md5(self.secret + last).digest()
             for b, h in zip(buf, cur_hash):
                 result += bytes([b ^ h])
 
@@ -730,7 +726,7 @@ class AuthPacket(Packet):
         challenge = self.authenticator
         if 'CHAP-Challenge' in self:
             challenge = self['CHAP-Challenge'][0]
-        return password == md5_constructor(chapid + userpwd + challenge).digest()
+        return password == md5(chapid + userpwd + challenge).digest()
 
     def verify_auth_request(self):
         """Verify request authenticator.
@@ -738,9 +734,9 @@ class AuthPacket(Packet):
         :return: True if verification failed else False
         :rtype: boolean
         """
-        assert (self.raw_packet)
-        hash = md5_constructor(self.raw_packet[0:4] + 16 * b'\x00' +
-                               self.raw_packet[20:] + self.secret).digest()
+        assert self.raw_packet
+        hash = md5(self.raw_packet[0:4] + 16 * b'\x00' + self.raw_packet[20:] +
+                   self.secret).digest()
         return hash == self.authenticator
 
 
@@ -785,8 +781,8 @@ class AcctPacket(Packet):
         """
         assert (self.raw_packet)
 
-        hash = md5_constructor(self.raw_packet[0:4] + 16 * b'\x00' +
-                               self.raw_packet[20:] + self.secret).digest()
+        hash = md5(self.raw_packet[0:4] + 16 * b'\x00' + self.raw_packet[20:] +
+                   self.secret).digest()
 
         return hash == self.authenticator
 
@@ -807,8 +803,7 @@ class AcctPacket(Packet):
 
         attr = self._pkt_encode_attributes()
         header = struct.pack('!BBH', self.code, self.id, (20 + len(attr)))
-        self.authenticator = md5_constructor(header[0:4] + 16 * b'\x00' +
-                                             attr + self.secret).digest()
+        self.authenticator = md5(header[0:4] + 16 * b'\x00' + attr + self.secret).digest()
 
         ans = header + self.authenticator + attr
 
@@ -854,9 +849,9 @@ class CoAPacket(Packet):
         :return: False if verification failed else True
         :rtype: boolean
         """
-        assert (self.raw_packet)
-        hash = md5_constructor(self.raw_packet[0:4] + 16 * b'\x00' +
-                               self.raw_packet[20:] + self.secret).digest()
+        assert self.raw_packet
+        hash = md5(self.raw_packet[0:4] + 16 * b'\x00' + self.raw_packet[20:] +
+                   self.secret).digest()
         return hash == self.authenticator
 
     def create_raw_request(self):
@@ -874,14 +869,12 @@ class CoAPacket(Packet):
             self.id = self.create_id()
 
         header = struct.pack('!BBH', self.code, self.id, (20 + len(attr)))
-        self.authenticator = md5_constructor(header[0:4] + 16 * b'\x00' +
-                                             attr + self.secret).digest()
+        self.authenticator = md5(header[0:4] + 16 * b'\x00' + attr + self.secret).digest()
 
         if self.message_authenticator:
             self._refresh_message_authenticator()
             attr = self._pkt_encode_attributes()
-            self.authenticator = md5_constructor(header[0:4] + 16 * b'\x00' +
-                                                 attr + self.secret).digest()
+            self.authenticator = md5(header[0:4] + 16 * b'\x00' + attr + self.secret).digest()
 
         return header + self.authenticator + attr
 
