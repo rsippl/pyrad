@@ -14,8 +14,8 @@ logging.basicConfig(filename='pyrad.log', level='DEBUG',
 
 def print_attributes(packet):
     print('Attributes')
-    for key, value in packet.items():
-        print(f'{key}: {value}')
+    for key in packet.keys():
+        print(f'{key}: {packet[key]}')
 
 
 class FakeServer(server.Server):

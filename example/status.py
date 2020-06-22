@@ -32,8 +32,8 @@ def main(path_to_dictionary):
         sys.exit(1)
 
     print('Attributes returned by server:')
-    for key, value in reply.items():
-        print(f'{key}: {value}')
+    for key in reply.keys():
+        print(f'{key}: {reply[key]}')
 
 
 if __name__ == '__main__':

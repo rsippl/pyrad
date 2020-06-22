@@ -22,8 +22,8 @@ logging.basicConfig(level='DEBUG',
 
 def print_attributes(packet):
     print('Attributes returned by server:')
-    for key, value in packet.items():
-        print(f'{key}: {value}')
+    for key in packet.keys():
+        print(f'{key}: {packet[key]}')
 
 
 class FakeServer(ServerAsync):

@@ -13,19 +13,20 @@ from pyrad.server import Server, RemoteHost
 
 def print_attributes(packet):
     print('Attributes')
-    for key, value in packet.items():
-        print(f'{key}: {value}')
+    for key in packet.keys():
+        print(f'{key}: {packet[key]}')
 
 
 class FakeCoA(Server):
     def handle_coa_packet(self, packet):
-        '''Accounting packet handler.
+        """
+        Accounting packet handler.
         Function that is called when a valid
         accounting packet has been received.
 
         :param packet: packet to process
         :type  packet: Packet class instance
-        '''
+        """
         print('Received a coa request %d' % packet.code)
         print_attributes(packet)
 
