@@ -1,7 +1,9 @@
-Copyright 2017-2020 Christian Giese. All rights reserved.
-Copyright 2007-2008 Simplon. All rights reserved.
-Copyright 2002-2008 Wichert Akkerman. All rights reserved.
+BSD 3-Clause License
 
+Copyright (c) 2002-2008, Wichert Akkerman
+Copyright (c) 2007-2008, Simplon
+Copyright (c) 2017-2020, Christian Giese
+Copyright (c) 2020, Ralf Sippl
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
