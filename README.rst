@@ -44,8 +44,8 @@ Here is an example of doing a authentication request::
         print("access denied")
 
     print("Attributes returned by server:")
-    for key, values in reply.items():
-        print("{key}: {value}")
+    for key in reply.keys():
+        print("{key}: {reply[key]}")
 
 
 
