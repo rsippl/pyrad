@@ -234,7 +234,7 @@ class ClientAsync:
                 timeout=self.timeout
             )
             bind_addr = None
-            if local_addr and local_acct_port:
+            if local_addr is not None and local_acct_port is not None:
                 bind_addr = (local_addr, local_acct_port)
 
             acct_connect = self.loop.create_datagram_endpoint(
@@ -254,7 +254,7 @@ class ClientAsync:
                 timeout=self.timeout
             )
             bind_addr = None
-            if local_addr and local_auth_port:
+            if local_addr is not None and local_auth_port is not None:
                 bind_addr = (local_addr, local_auth_port)
 
             auth_connect = self.loop.create_datagram_endpoint(
@@ -274,7 +274,7 @@ class ClientAsync:
                 timeout=self.timeout
             )
             bind_addr = None
-            if local_addr and local_coa_port:
+            if local_addr is not None and local_coa_port is not None:
                 bind_addr = (local_addr, local_coa_port)
 
             coa_connect = self.loop.create_datagram_endpoint(
