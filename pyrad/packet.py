@@ -78,8 +78,7 @@ class Packet(OrderedDict):
         if not isinstance(secret, bytes):
             raise TypeError('secret must be a binary string')
         self.secret = secret
-        if authenticator is not None and \
-                not isinstance(authenticator, bytes):
+        if authenticator is not None and not isinstance(authenticator, bytes):
             raise TypeError('authenticator must be a binary string')
         self.authenticator = authenticator
         self.message_authenticator = None
@@ -126,8 +125,7 @@ class Packet(OrderedDict):
         self['Message-Authenticator'] = 16 * b'\00'
         attr = self._pkt_encode_attributes()
 
-        header = struct.pack('!BBH', self.code, self.id,
-                             (20 + len(attr)))
+        header = self._encode_header(attr)
 
         hmac_constructor.update(header[0:4])
         if self.code in (PacketCode.ACCOUNTING_REQUEST, PacketCode.DISCONNECT_REQUEST,
@@ -171,8 +169,7 @@ class Packet(OrderedDict):
         self['Message-Authenticator'] = 16 * b'\00'
         attr = self._pkt_encode_attributes()
 
-        header = struct.pack('!BBH', self.code, self.id,
-                             (20 + len(attr)))
+        header = self._encode_header(attr)
 
         hmac_constructor = hmac.new(key, digestmod=md5)
         hmac_constructor.update(header)
@@ -181,10 +178,11 @@ class Packet(OrderedDict):
             if original_code is None or original_code != PacketCode.STATUS_SERVER:
                 # TODO: Handle Status-Server response correctly.
                 hmac_constructor.update(16 * b'\00')
-        elif self.code in (PacketCode.ACCESS_ACCEPT, PacketCode.ACCESS_CHALLENGE,
+        elif self.code in (PacketCode.ACCESS_ACCEPT,
+                           PacketCode.ACCESS_CHALLENGE,
                            PacketCode.ACCESS_REJECT):
             if original_authenticator is None:
-                if self.authenticator:
+                if self.authenticator is None:
                     # NOTE: self.authenticator on reply packet is initialized
                     #       with request authenticator by design.
                     original_authenticator = self.authenticator
@@ -200,6 +198,9 @@ class Packet(OrderedDict):
         self['Message-Authenticator'] = prev_ma[0]
         return prev_ma[0] == hmac_constructor.digest()
 
+    def _encode_header(self, attr):
+        return struct.pack('!BBH', self.code, self.id, 20 + len(attr))
+
     def create_reply(self, **attributes):
         """Create a new packet as a reply to this one. This method
         makes sure the authenticator and secret are copied over
@@ -212,7 +213,8 @@ class Packet(OrderedDict):
     def create_raw_request(self):
         raise NotImplementedError()
 
-    def _decode_value(self, attr, value):
+    @staticmethod
+    def _decode_value(attr, value):
         try:
             return attr.values.get_backward(value)
         except KeyError:
@@ -350,7 +352,6 @@ class Packet(OrderedDict):
 
         return secrets.token_bytes(16)
 
-
     def create_id(self):
         """Create a packet ID.  All RADIUS requests have a ID which is used to
         identify a request. This is used to detect retries and replay attacks.
@@ -380,7 +381,7 @@ class Packet(OrderedDict):
             self._refresh_message_authenticator()
 
         attr = self._pkt_encode_attributes()
-        header = struct.pack('!BBH', self.code, self.id, (20 + len(attr)))
+        header = self._encode_header(attr)
 
         authenticator = md5(header[0:4] + self.authenticator + attr + self.secret).digest()
 
@@ -807,7 +808,7 @@ class AcctPacket(Packet):
             self._refresh_message_authenticator()
 
         attr = self._pkt_encode_attributes()
-        header = struct.pack('!BBH', self.code, self.id, (20 + len(attr)))
+        header = self._encode_header(attr)
         self.authenticator = md5(header[0:4] + 16 * b'\x00' + attr + self.secret).digest()
 
         ans = header + self.authenticator + attr
@@ -875,7 +876,7 @@ class CoAPacket(Packet):
         if self.id is None:
             self.id = self.create_id()
 
-        header = struct.pack('!BBH', self.code, self.id, (20 + len(attr)))
+        header = self._encode_header(attr)
         self.authenticator = md5(header[0:4] + 16 * b'\x00' + attr + self.secret).digest()
 
         if self.message_authenticator:

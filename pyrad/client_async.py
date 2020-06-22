@@ -188,7 +188,7 @@ class ClientAsync:
         :param  coa_port: port to use for CoA packets
         :type   coa_port: integer
         :param    secret: RADIUS secret
-        :type     secret: string
+        :type     secret: bytes
         :param      dict: RADIUS dictionary
         :type       dict: pyrad.dictionary.Dictionary
         :param      loop: Python loop handler

@@ -18,7 +18,7 @@ class RemoteHost:
         :param   address: IP address
         :type    address: string
         :param    secret: RADIUS secret
-        :type     secret: string
+        :type     secret: bytes
         :param      name: short name (used for logging only)
         :type       name: string
         :param  authport: port used for authentication packets
