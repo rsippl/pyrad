@@ -61,7 +61,7 @@ class Packet(OrderedDict):
         :param dict:   RADIUS dictionary
         :type dict:    pyrad.dictionary.Dictionary class
         :param secret: secret needed to communicate with a RADIUS server
-        :type secret:  string
+        :type secret:  bytes
         :param id:     packet identification number
         :type id:      integer (8 bits)
         :param code:   packet type code
@@ -209,6 +209,9 @@ class Packet(OrderedDict):
                       authenticator=self.authenticator, dict=self.dict,
                       **attributes)
 
+    def create_raw_request(self):
+        raise NotImplementedError()
+
     def _decode_value(self, attr, value):
         try:
             return attr.values.get_backward(value)
@@ -347,6 +350,7 @@ class Packet(OrderedDict):
 
         return secrets.token_bytes(16)
 
+
     def create_id(self):
         """Create a packet ID.  All RADIUS requests have a ID which is used to
         identify a request. This is used to detect retries and replay attacks.
@@ -364,11 +368,13 @@ class Packet(OrderedDict):
         to a RADIUS server. This differs with Packet() in how
         the authenticator is calculated.
 
-        :return: raw packet
+        :return: raw reply packet
         :rtype:  string
         """
-        assert (self.authenticator)
-        assert (self.secret is not None)
+        if self.authenticator is None:
+            raise ValueError('Authenticator not initialized')
+        if self.secret is None:
+            raise ValueError('Secret not initialized')
 
         if self.message_authenticator:
             self._refresh_message_authenticator()
@@ -494,7 +500,7 @@ class Packet(OrderedDict):
         received from the network and decode it.
 
         :param packet: raw packet
-        :type packet:  string"""
+        :type packet:  bytes"""
 
         try:
             (self.code, self.id, length, self.authenticator) = \
@@ -539,7 +545,7 @@ class Packet(OrderedDict):
         """Salt Encryption
 
         :param value:    plaintext value
-        :type password:  unicode string
+        :type value:     unicode string
         :return:         obfuscated version of the value
         :rtype:          binary string
         """
@@ -580,7 +586,7 @@ class AuthPacket(Packet):
         :param id:     packet identification number
         :type id:      integer (8 bits)
         :param secret: secret needed to communicate with a RADIUS server
-        :type secret:  string
+        :type secret:  bytes
 
         :param dict:   RADIUS dictionary
         :type dict:    pyrad.dictionary.Dictionary class
@@ -730,7 +736,9 @@ class AuthPacket(Packet):
         :return: True if verification failed else False
         :rtype: boolean
         """
-        assert self.raw_packet
+        if self.raw_packet is None:
+            raise ValueError('Packet not initialized')
+
         hash = md5(self.raw_packet[0:4] + 16 * b'\x00' + self.raw_packet[20:] +
                    self.secret).digest()
         return hash == self.authenticator
@@ -748,7 +756,7 @@ class AcctPacket(Packet):
         :param dict:   RADIUS dictionary
         :type dict:    pyrad.dictionary.Dictionary class
         :param secret: secret needed to communicate with a RADIUS server
-        :type secret:  string
+        :type secret:  bytes
         :param id:     packet identification number
         :type id:      integer (8 bits)
         :param code:   packet type code
@@ -775,7 +783,8 @@ class AcctPacket(Packet):
         :return: False if verification failed else True
         :rtype: boolean
         """
-        assert (self.raw_packet)
+        if self.raw_packet is None:
+            raise ValueError('Packet not initialized')
 
         hash = md5(self.raw_packet[0:4] + 16 * b'\x00' + self.raw_packet[20:] +
                    self.secret).digest()
@@ -818,7 +827,7 @@ class CoAPacket(Packet):
         :param dict:   RADIUS dictionary
         :type dict:    pyrad.dictionary.Dictionary class
         :param secret: secret needed to communicate with a RADIUS server
-        :type secret:  string
+        :type secret:  bytes
         :param id:     packet identification number
         :type id:      integer (8 bits)
         :param code:   packet type code
@@ -845,7 +854,9 @@ class CoAPacket(Packet):
         :return: False if verification failed else True
         :rtype: boolean
         """
-        assert self.raw_packet
+        if self.raw_packet is None:
+            raise ValueError('Packet not initialized')
+
         hash = md5(self.raw_packet[0:4] + 16 * b'\x00' + self.raw_packet[20:] +
                    self.secret).digest()
         return hash == self.authenticator

@@ -47,7 +47,7 @@ class Client(host.Host):
         :param coaport: port to use for CoA packets
         :type  coaport: integer
         :param   secret: RADIUS secret
-        :type    secret: string
+        :type    secret: bytes
         :param     dict: RADIUS dictionary
         :type      dict: pyrad.dictionary.Dictionary
         """
