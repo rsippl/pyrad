@@ -7,7 +7,7 @@ from collections import OrderedDict
 from enum import IntEnum
 from hashlib import md5
 
-from pyrad import tools
+from pyrad import encoding
 
 
 class PacketCode(IntEnum):
@@ -216,13 +216,13 @@ class Packet(OrderedDict):
         try:
             return attr.values.get_backward(value)
         except KeyError:
-            return tools.decode_attr(attr.type, value)
+            return encoding.decode_attr(attr.type, value)
 
     def _encode_value(self, attr, value):
         try:
             result = attr.values.get_forward(value)
         except KeyError:
-            result = tools.encode_attr(attr.type, value)
+            result = encoding.encode_attr(attr.type, value)
 
         if attr.encrypt == 2:
             # salt encrypt attribute
@@ -232,7 +232,7 @@ class Packet(OrderedDict):
 
     def _encode_key_values(self, key, values):
         if not isinstance(key, str):
-            return (key, values)
+            return key, values
 
         if not isinstance(values, (list, tuple)):
             values = [values]
@@ -718,7 +718,7 @@ class AuthPacket(Packet):
         if isinstance(userpwd, str):
             userpwd = userpwd.strip().encode('utf-8')
 
-        chap_password = tools.decode_octets(self.get(3)[0])
+        chap_password = encoding.decode_octets(self.get(3)[0])
         if len(chap_password) != 17:
             return False
 

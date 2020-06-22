@@ -10,7 +10,7 @@ Here is an example of doing a authentication request::
   from pyrad.client import Client
   from pyrad.dictionary import Dictionary
 
-  client = Client(server="radius.my.domain", secret="s3cr3t",
+  client = Client(server="radius.my.domain", secret=b"s3cr3t",
   dict = Dictionary("dicts/dictionary", "dictionary.acc"))
 
   req = client.create_packet(code=PacketCode.ACCESS_REQUEST,
@@ -33,7 +33,7 @@ This package contains four modules:
   - client: RADIUS client code
   - dictionary: RADIUS attribute dictionary
   - packet: a RADIUS packet as send to/from servers
-  - tools: utility functions
+  - encoding: functions for encoding/decoding attributes
 """
 
 __docformat__ = 'epytext en'
@@ -43,4 +43,4 @@ __url__ = 'http://pyrad.readthedocs.io/en/latest/?badge=latest'
 __copyright__ = 'Copyright 2002-2020 Wichert Akkerman and Christian Giese. All rights reserved.'
 __version__ = '2.3'
 
-__all__ = ['client', 'dictionary', 'packet', 'server', 'tools', 'dictfile']
+__all__ = ['client', 'dictionary', 'packet', 'server', 'encoding', 'dictfile']

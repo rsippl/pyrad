@@ -8,7 +8,7 @@ from pyrad.dictionary import Attribute
 from pyrad.dictionary import Dictionary
 from pyrad.dictionary import ParseError
 from pyrad.tests import home
-from pyrad.tools import decode_attr
+from pyrad.encoding import decode_attr
 
 
 class AttributeTests(unittest.TestCase):

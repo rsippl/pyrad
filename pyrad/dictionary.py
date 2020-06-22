@@ -72,7 +72,7 @@ from copy import copy
 
 from pyrad import bidict
 from pyrad import dictfile
-from pyrad import tools
+from pyrad import encoding
 
 __docformat__ = 'epytext en'
 
@@ -277,7 +277,7 @@ class Dictionary():
 
         if adef.type in ['integer', 'signed', 'short', 'byte', 'integer64']:
             value = int(value, 0)
-        value = tools.encode_attr(adef.type, value)
+        value = encoding.encode_attr(adef.type, value)
         self.attributes[attr].values.add(key, value)
 
     def __parse_vendor(self, state, tokens):

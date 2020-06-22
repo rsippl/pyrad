@@ -1,4 +1,4 @@
-# Utility functions
+# Functions for encoding/decoding attributes
 
 import binascii
 import ipaddress
