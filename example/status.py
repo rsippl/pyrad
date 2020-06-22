@@ -15,7 +15,7 @@ def main(path_to_dictionary):
                  secret=b'test',
                  dict=Dictionary(path_to_dictionary))
 
-    req = srv.CreateAuthPacket(
+    req = srv.create_auth_packet(
         code=PacketCode.STATUS_SERVER,
         FreeRADIUS_Statistics_Type='All',
     )
@@ -23,7 +23,7 @@ def main(path_to_dictionary):
 
     try:
         print('Sending FreeRADIUS status request')
-        reply = srv.SendPacket(req)
+        reply = srv.send_packet(req)
     except pyrad.client.Timeout:
         print('RADIUS server does not reply')
         sys.exit(1)

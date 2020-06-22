@@ -1,5 +1,6 @@
 import operator
 import unittest
+
 from pyrad.bidict import BiDict
 
 

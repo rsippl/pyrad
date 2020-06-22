@@ -113,4 +113,5 @@ class DictFile(object):
                 else:
                     return line
         raise StopIteration
+
     next = __next__  # BBB for python <3

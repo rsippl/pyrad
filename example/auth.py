@@ -13,7 +13,7 @@ def main(path_to_dictionary):
                  secret=b'Kah3choteereethiejeimaeziecumi',
                  dict=Dictionary(path_to_dictionary))
 
-    req = srv.CreateAuthPacket(
+    req = srv.create_auth_packet(
         code=PacketCode.ACCESS_REQUEST,
         **{
             'User-Name': 'wichert',
@@ -28,7 +28,7 @@ def main(path_to_dictionary):
 
     try:
         print('Sending authentication request')
-        reply = srv.SendPacket(req)
+        reply = srv.send_packet(req)
     except Timeout:
         print('RADIUS server does not reply')
         sys.exit(1)

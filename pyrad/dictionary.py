@@ -74,11 +74,10 @@ These datatypes are parsed but not supported:
 from copy import copy
 
 from pyrad import bidict
-from pyrad import tools
 from pyrad import dictfile
+from pyrad import tools
 
 __docformat__ = 'epytext en'
-
 
 DATATYPES = frozenset(['string', 'ipaddr', 'integer', 'date', 'octets',
                        'abinary', 'ipv6addr', 'ipv6prefix', 'short', 'byte',
@@ -184,6 +183,7 @@ class Dictionary():
                     return (kv[0], kv[1])
                 else:
                     return (kv[0], None)
+
             options = [keyval(o) for o in tokens[4].split(',')]
             for (key, val) in options:
                 if key == 'has_tag':
@@ -280,7 +280,7 @@ class Dictionary():
 
         if adef.type in ['integer', 'signed', 'short', 'byte', 'integer64']:
             value = int(value, 0)
-        value = tools.EncodeAttr(adef.type, value)
+        value = tools.encode_attr(adef.type, value)
         self.attributes[attr].values.add(key, value)
 
     def __parse_vendor(self, state, tokens):

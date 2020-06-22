@@ -15,7 +15,7 @@ logging.basicConfig(level='DEBUG',
 
 
 def create_request(client, user):
-    return client.CreateAuthPacket(**{
+    return client.create_auth_packet(**{
         'User-Name': user,
         'NAS-IP-Address': '192.168.1.10',
         'NAS-Port': 0,
@@ -63,7 +63,7 @@ def main(path_to_dictionary):
         requests = []
         for i in range(255):
             req = create_request(client, f'user{i}')
-            future = client.SendPacket(req)
+            future = client.send_packet(req)
             requests.append(future)
 
         # Send auth requests asynchronously to the server

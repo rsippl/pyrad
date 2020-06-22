@@ -38,7 +38,7 @@ class FakeServer(ServerAsync):
         print('Secret ', packet.secret)
         print_attributes(packet)
 
-        reply = self.CreateReplyPacket(packet, **{
+        reply = self.create_reply_packet(packet, **{
             'Service-Type': 'Framed-User',
             'Framed-IP-Address': '192.168.0.1',
             'Framed-IPv6-Prefix': 'fc66::/64'
@@ -51,21 +51,21 @@ class FakeServer(ServerAsync):
         print('Received an accounting request')
         print_attributes(packet)
 
-        reply = self.CreateReplyPacket(packet)
+        reply = self.create_reply_packet(packet)
         protocol.send_response(reply, addr)
 
     def handle_coa_packet(self, protocol, packet, addr):
         print('Received an coa request')
         print_attributes(packet)
 
-        reply = self.CreateReplyPacket(packet)
+        reply = self.create_reply_packet(packet)
         protocol.send_response(reply, addr)
 
     def handle_disconnect_packet(self, protocol, packet, addr):
         print('Received an disconnect request')
         print_attributes(packet)
 
-        reply = self.CreateReplyPacket(packet)
+        reply = self.create_reply_packet(packet)
         # COA NAK
         reply.code = 45
         protocol.send_response(reply, addr)

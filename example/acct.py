@@ -13,7 +13,7 @@ from pyrad.dictionary import Dictionary
 
 def send_accounting_packet(srv, req):
     try:
-        srv.SendPacket(req)
+        srv.send_packet(req)
     except pyrad.client.Timeout:
         print('RADIUS server does not reply')
         sys.exit(1)
@@ -27,7 +27,7 @@ def main(path_to_dictionary):
                  secret=b'Kah3choteereethiejeimaeziecumi',
                  dict=Dictionary(path_to_dictionary))
 
-    req = srv.CreateAcctPacket(**{
+    req = srv.create_acct_packet(**{
         'User-Name': 'wichert',
         'NAS-IP-Address': '192.168.1.10',
         'NAS-Port': 0,

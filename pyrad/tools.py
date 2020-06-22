@@ -6,7 +6,7 @@ import ipaddress
 import struct
 
 
-def EncodeString(string):
+def encode_string(string):
     if len(string) > 253:
         raise ValueError('Can only encode strings of <= 253 characters')
     if isinstance(string, str):
@@ -14,7 +14,7 @@ def EncodeString(string):
     return string
 
 
-def EncodeOctets(string):
+def encode_octets(string):
     if len(string) > 253:
         raise ValueError('Can only encode strings of <= 253 characters')
 
@@ -25,26 +25,26 @@ def EncodeOctets(string):
         return string
 
 
-def EncodeAddress(addr):
+def encode_ipv4_address(addr):
     if not isinstance(addr, str):
         raise TypeError('Address has to be a string')
     return ipaddress.IPv4Address(addr).packed
 
 
-def EncodeIPv6Prefix(addr):
+def encode_ipv6_prefix(addr):
     if not isinstance(addr, str):
         raise TypeError('IPv6 Prefix has to be a string')
     ip = ipaddress.IPv6Network(addr)
     return struct.pack('BB', 0, ip.prefixlen) + ip.network_address.packed
 
 
-def EncodeIPv6Address(addr):
+def encode_ipv6_address(addr):
     if not isinstance(addr, str):
         raise TypeError('IPv6 Address has to be a string')
     return ipaddress.IPv6Address(addr).packed
 
 
-def EncodeAscendBinary(string):
+def encode_ascend_binary(string):
     """
     Format: List of type=value pairs sperated by spaces.
 
@@ -71,18 +71,18 @@ def EncodeAscendBinary(string):
     """
 
     terms = {
-        'family':       b'\x01',
-        'action':       b'\x00',
-        'direction':    b'\x01',
-        'src':          b'\x00\x00\x00\x00',
-        'dst':          b'\x00\x00\x00\x00',
-        'srcl':         b'\x00',
-        'dstl':         b'\x00',
-        'proto':        b'\x00',
-        'sport':        b'\x00\x00',
-        'dport':        b'\x00\x00',
-        'sportq':       b'\x00',
-        'dportq':       b'\x00'
+        'family': b'\x01',
+        'action': b'\x00',
+        'direction': b'\x01',
+        'src': b'\x00\x00\x00\x00',
+        'dst': b'\x00\x00\x00\x00',
+        'srcl': b'\x00',
+        'dstl': b'\x00',
+        'proto': b'\x00',
+        'sport': b'\x00\x00',
+        'dport': b'\x00\x00',
+        'sportq': b'\x00',
+        'dportq': b'\x00'
     }
 
     for t in string.split(' '):
@@ -115,7 +115,7 @@ def EncodeAscendBinary(string):
     return result
 
 
-def EncodeInteger(num, format='!I'):
+def encode_integer(num, format='!I'):
     try:
         num = int(num)
     except ValueError:
@@ -123,7 +123,7 @@ def EncodeInteger(num, format='!I'):
     return struct.pack(format, num)
 
 
-def EncodeInteger64(num, format='!Q'):
+def encode_integer_64(num, format='!Q'):
     try:
         num = int(num)
     except ValueError:
@@ -131,28 +131,28 @@ def EncodeInteger64(num, format='!Q'):
     return struct.pack(format, num)
 
 
-def EncodeDate(num):
+def encode_date(num):
     if not isinstance(num, int):
         raise TypeError('Can not encode non-integer as date')
     return struct.pack('!I', num)
 
 
-def DecodeString(string):
+def decode_string(string):
     try:
         return string.decode('utf-8')
     except:
         return string
 
 
-def DecodeOctets(string):
+def decode_octets(string):
     return string
 
 
-def DecodeAddress(addr):
+def decode_ipv4_address(addr):
     return '.'.join((str(a) for a in struct.unpack('BBBB', addr)))
 
 
-def DecodeIPv6Prefix(addr):
+def decode_ipv6_prefix(addr):
     addr = addr + b'\x00' * (18 - len(addr))
     prefix = addr[:2]
     addr = addr[2:]
@@ -161,44 +161,44 @@ def DecodeIPv6Prefix(addr):
     return str(network)
 
 
-def DecodeIPv6Address(addr):
+def decode_ipv6_address(addr):
     addr = addr + b'\x00' * (16 - len(addr))
     return str(ipaddress.IPv6Address(addr))
 
 
-def DecodeAscendBinary(string):
+def decode_ascend_binary(string):
     return string
 
 
-def DecodeInteger(num, format='!I'):
+def decode_integer(num, format='!I'):
     return (struct.unpack(format, num))[0]
 
 
-def DecodeInteger64(num, format='!Q'):
+def decode_integer_64(num, format='!Q'):
     return (struct.unpack(format, num))[0]
 
 
-def DecodeDate(num):
+def decode_date(num):
     return (struct.unpack('!I', num))[0]
 
 
 ENCODE_MAP = {
-    'string': EncodeString,
-    'octets': EncodeOctets,
-    'integer': EncodeInteger,
-    'ipaddr': EncodeAddress,
-    'ipv6prefix': EncodeIPv6Prefix,
-    'ipv6addr': EncodeIPv6Address,
-    'abinary': EncodeAscendBinary,
-    'signed': lambda value: EncodeInteger(value, '!i'),
-    'short': lambda value: EncodeInteger(value, '!H'),
-    'byte': lambda value: EncodeInteger(value, '!B'),
-    'date': EncodeDate,
-    'integer64': EncodeInteger64,
+    'string': encode_string,
+    'octets': encode_octets,
+    'integer': encode_integer,
+    'ipaddr': encode_ipv4_address,
+    'ipv6prefix': encode_ipv6_prefix,
+    'ipv6addr': encode_ipv6_address,
+    'abinary': encode_ascend_binary,
+    'signed': lambda value: encode_integer(value, '!i'),
+    'short': lambda value: encode_integer(value, '!H'),
+    'byte': lambda value: encode_integer(value, '!B'),
+    'date': encode_date,
+    'integer64': encode_integer_64,
 }
 
 
-def EncodeAttr(datatype, value):
+def encode_attr(datatype, value):
     try:
         return ENCODE_MAP[datatype](value)
     except KeyError:
@@ -206,22 +206,22 @@ def EncodeAttr(datatype, value):
 
 
 DECODE_MAP = {
-    'string': DecodeString,
-    'octets': DecodeOctets,
-    'integer': DecodeInteger,
-    'ipaddr': DecodeAddress,
-    'ipv6prefix': DecodeIPv6Prefix,
-    'ipv6addr': DecodeIPv6Address,
-    'abinary': DecodeAscendBinary,
-    'signed': lambda value: DecodeInteger(value, '!i'),
-    'short': lambda value: DecodeInteger(value, '!H'),
-    'byte': lambda value: DecodeInteger(value, '!B'),
-    'date': DecodeDate,
-    'integer64': DecodeInteger64,
+    'string': decode_string,
+    'octets': decode_octets,
+    'integer': decode_integer,
+    'ipaddr': decode_ipv4_address,
+    'ipv6prefix': decode_ipv6_prefix,
+    'ipv6addr': decode_ipv6_address,
+    'abinary': decode_ascend_binary,
+    'signed': lambda value: decode_integer(value, '!i'),
+    'short': lambda value: decode_integer(value, '!H'),
+    'byte': lambda value: decode_integer(value, '!B'),
+    'date': decode_date,
+    'integer64': decode_integer_64,
 }
 
 
-def DecodeAttr(datatype, value):
+def decode_attr(datatype, value):
     try:
         return DECODE_MAP[datatype](value)
     except KeyError:

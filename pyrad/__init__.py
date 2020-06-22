@@ -13,11 +13,11 @@ Here is an example of doing a authentication request::
   srv = Client(server="radius.my.domain", secret="s3cr3t",
     dict = Dictionary("dicts/dictionary", "dictionary.acc"))
 
-  req = srv.CreatePacket(code=PacketCode.ACCESS_REQUEST,
+  req = srv.create_packet(code=PacketCode.ACCESS_REQUEST,
         User_Name = "wichert", NAS_Identifier="localhost")
-  req["User-Password"] = req.PwCrypt("password")
+  req["User-Password"] = req.pw_crypt("password")
 
-  reply = srv.SendPacket(req)
+  reply = srv.send_packet(req)
   if reply.code = =pyrad.packet.ACCESS_ACCEPT:
       print "access accepted"
   else:

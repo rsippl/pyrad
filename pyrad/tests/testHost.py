@@ -1,8 +1,9 @@
 import unittest
+
 from pyrad.host import Host
-from pyrad.packet import Packet
-from pyrad.packet import AuthPacket
 from pyrad.packet import AcctPacket
+from pyrad.packet import AuthPacket
+from pyrad.packet import Packet
 
 
 class ConstructionTests(unittest.TestCase):
@@ -31,19 +32,19 @@ class PacketCreationTests(unittest.TestCase):
         self.host = Host()
 
     def testCreatePacket(self):
-        packet = self.host.CreatePacket(id=15)
+        packet = self.host.create_packet(id=15)
         self.failUnless(isinstance(packet, Packet))
         self.failUnless(packet.dict is self.host.dict)
         self.assertEqual(packet.id, 15)
 
     def testCreateAuthPacket(self):
-        packet = self.host.CreateAuthPacket(id=15)
+        packet = self.host.create_auth_packet(id=15)
         self.failUnless(isinstance(packet, AuthPacket))
         self.failUnless(packet.dict is self.host.dict)
         self.assertEqual(packet.id, 15)
 
     def testCreateAcctPacket(self):
-        packet = self.host.CreateAcctPacket(id=15)
+        packet = self.host.create_acct_packet(id=15)
         self.failUnless(isinstance(packet, AcctPacket))
         self.failUnless(packet.dict is self.host.dict)
         self.assertEqual(packet.id, 15)
@@ -57,7 +58,7 @@ class MockPacket:
     def Packet(self):
         return self.packet
 
-    def ReplyPacket(self):
+    def create_raw_reply(self):
         return self.replypacket
 
 
@@ -77,11 +78,11 @@ class PacketSendTest(unittest.TestCase):
         self.packet = MockPacket()
 
     def testSendPacket(self):
-        self.host.SendPacket(self.fd, self.packet)
+        self.host.send_packet(self.fd, self.packet)
         self.failUnless(self.fd.data is self.packet.packet)
         self.failUnless(self.fd.target is self.packet.source)
 
     def testSendReplyPacket(self):
-        self.host.SendReplyPacket(self.fd, self.packet)
+        self.host.send_reply_packet(self.fd, self.packet)
         self.failUnless(self.fd.data is self.packet.replypacket)
         self.failUnless(self.fd.target is self.packet.source)

@@ -42,7 +42,7 @@ class DatagramProtocolServer(asyncio.Protocol):
             self.logger.info('[%s:%d] Transport closed', self.ip, self.port)
 
     def send_response(self, reply, addr):
-        self.transport.sendto(reply.ReplyPacket(), addr)
+        self.transport.sendto(reply.create_raw_reply(), addr)
 
     def datagram_received(self, data, addr):
         self.logger.debug('[%s:%d] Received %d bytes from %s', self.ip, self.port, len(data), addr)
@@ -68,7 +68,8 @@ class DatagramProtocolServer(asyncio.Protocol):
 
         try:
             if req.code in (
-                    PacketCode.ACCOUNTING_RESPONSE, PacketCode.ACCESS_ACCEPT, PacketCode.ACCESS_REJECT,
+                    PacketCode.ACCOUNTING_RESPONSE, PacketCode.ACCESS_ACCEPT,
+                    PacketCode.ACCESS_REJECT,
                     PacketCode.COA_NAK, PacketCode.COA_ACK, PacketCode.DISCONNECT_NAK,
                     PacketCode.DISCONNECT_ACK):
                 raise ServerPacketError(f'Invalid response packet {req.code}')
@@ -80,7 +81,7 @@ class DatagramProtocolServer(asyncio.Protocol):
                                  dict=self.server.dict,
                                  packet=data)
                 if self.server.enable_pkt_verify:
-                    if req.VerifyAuthRequest():
+                    if req.verify_auth_request():
                         raise PacketError('Packet verification failed')
 
             elif self.server_type == ServerType.Coa:
@@ -90,7 +91,7 @@ class DatagramProtocolServer(asyncio.Protocol):
                                 dict=self.server.dict,
                                 packet=data)
                 if self.server.enable_pkt_verify:
-                    if req.VerifyCoARequest():
+                    if req.verify_coa_request():
                         raise PacketError('Packet verification failed')
 
             elif self.server_type == ServerType.Acct:
@@ -101,7 +102,7 @@ class DatagramProtocolServer(asyncio.Protocol):
                                  dict=self.server.dict,
                                  packet=data)
                 if self.server.enable_pkt_verify:
-                    if req.VerifyAcctRequest():
+                    if req.verify_acct_request():
                         raise PacketError('Packet verification failed')
 
             # Call request callback
@@ -204,9 +205,8 @@ class ServerAsync(metaclass=ABCMeta):
                     return True
         return False
 
-    # noinspection PyPep8Naming
     @staticmethod
-    def CreateReplyPacket(pkt, **attributes):
+    def create_reply_packet(pkt, **attributes):
         """Create a reply packet.
         Create a new packet which can be returned as a reply to a received
         packet.
@@ -214,7 +214,7 @@ class ServerAsync(metaclass=ABCMeta):
         :param pkt:   original packet
         :type pkt:    Packet instance
         """
-        reply = pkt.CreateReply(**attributes)
+        reply = pkt.create_reply(**attributes)
         return reply
 
     async def initialize_transports(self, enable_acct=False,
@@ -228,7 +228,6 @@ class ServerAsync(metaclass=ABCMeta):
         if not addresses or len(addresses) == 0:
             addresses = ['127.0.0.1']
 
-        # noinspection SpellCheckingInspection
         for addr in addresses:
 
             if enable_acct and not self.__is_present_proto__(addr, self.acct_port):
@@ -296,7 +295,6 @@ class ServerAsync(metaclass=ABCMeta):
             loop=self.loop
         )
 
-    # noinspection SpellCheckingInspection
     async def deinitialize_transports(self, deinit_coa=True, deinit_auth=True, deinit_acct=True):
 
         if deinit_coa:

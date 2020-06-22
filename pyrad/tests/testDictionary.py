@@ -1,13 +1,14 @@
-import unittest
 import operator
 import os
+import unittest
 from io import StringIO
-from pyrad.tests import home
+
+from pyrad.dictfile import DictFile
 from pyrad.dictionary import Attribute
 from pyrad.dictionary import Dictionary
 from pyrad.dictionary import ParseError
-from pyrad.tools import DecodeAttr
-from pyrad.dictfile import DictFile
+from pyrad.tests import home
+from pyrad.tools import decode_attr
 
 
 class AttributeTests(unittest.TestCase):
@@ -62,7 +63,6 @@ class DictionaryInterfaceTests(unittest.TestCase):
 
 
 class DictionaryParsingTests(unittest.TestCase):
-
     simple_dict_values = [
         ('Test-String', 1, 'string'),
         ('Test-Octets', 2, 'octets'),
@@ -106,7 +106,7 @@ class DictionaryParsingTests(unittest.TestCase):
     def testAttributeTooFewColumnsError(self):
         try:
             self.dict.read_dictionary(
-                    StringIO('ATTRIBUTE Oops-Too-Few-Columns'))
+                StringIO('ATTRIBUTE Oops-Too-Few-Columns'))
         except ParseError as e:
             self.assertEqual('attribute' in str(e), True)
         else:
@@ -165,7 +165,7 @@ class DictionaryParsingTests(unittest.TestCase):
         self.dict.read_dictionary(StringIO('VALUE Test-Integer Value-Six 5'))
         self.assertEqual(len(self.dict['Test-Integer'].values), 1)
         self.assertEqual(
-            DecodeAttr('integer', self.dict['Test-Integer'].values['Value-Six']),
+            decode_attr('integer', self.dict['Test-Integer'].values['Value-Six']),
             5)
 
     def testInteger64ValueParsing(self):
@@ -173,7 +173,7 @@ class DictionaryParsingTests(unittest.TestCase):
         self.dict.read_dictionary(StringIO('VALUE Test-Integer64 Value-Six 5'))
         self.assertEqual(len(self.dict['Test-Integer64'].values), 1)
         self.assertEqual(
-            DecodeAttr('integer64', self.dict['Test-Integer64'].values['Value-Six']),
+            decode_attr('integer64', self.dict['Test-Integer64'].values['Value-Six']),
             5)
 
     def testStringValueParsing(self):
@@ -181,7 +181,7 @@ class DictionaryParsingTests(unittest.TestCase):
         self.dict.read_dictionary(StringIO('VALUE Test-String Value-Custard custardpie'))
         self.assertEqual(len(self.dict['Test-String'].values), 1)
         self.assertEqual(
-            DecodeAttr('string', self.dict['Test-String'].values['Value-Custard']),
+            decode_attr('string', self.dict['Test-String'].values['Value-Custard']),
             'custardpie')
 
     def testTlvParsing(self):
@@ -269,9 +269,9 @@ class DictionaryParsingTests(unittest.TestCase):
 
     def testBeginVendorParsing(self):
         self.dict.read_dictionary(StringIO(
-                        'VENDOR Simplon 42\n'
-                        'BEGIN-VENDOR Simplon\n'
-                        'ATTRIBUTE Test-Type 1 integer'))
+            'VENDOR Simplon 42\n'
+            'BEGIN-VENDOR Simplon\n'
+            'ATTRIBUTE Test-Type 1 integer'))
         self.assertEqual(self.dict.attrindex['Test-Type'], (42, 1))
 
     def testEndVendorUnknownVendor(self):
@@ -285,9 +285,9 @@ class DictionaryParsingTests(unittest.TestCase):
     def testEndVendorUnbalanced(self):
         try:
             self.dict.read_dictionary(StringIO(
-                            'VENDOR Simplon 42\n'
-                            'BEGIN-VENDOR Simplon\n'
-                            'END-VENDOR Oops\n'))
+                'VENDOR Simplon 42\n'
+                'BEGIN-VENDOR Simplon\n'
+                'END-VENDOR Oops\n'))
         except ParseError as e:
             self.assertEqual('Oops' in str(e), True)
         else:
@@ -295,20 +295,20 @@ class DictionaryParsingTests(unittest.TestCase):
 
     def testEndVendorParsing(self):
         self.dict.read_dictionary(StringIO(
-                        'VENDOR Simplon 42\n'
-                        'BEGIN-VENDOR Simplon\n'
-                        'END-VENDOR Simplon\n'
-                        'ATTRIBUTE Test-Type 1 integer'))
+            'VENDOR Simplon 42\n'
+            'BEGIN-VENDOR Simplon\n'
+            'END-VENDOR Simplon\n'
+            'ATTRIBUTE Test-Type 1 integer'))
         self.assertEqual(self.dict.attrindex['Test-Type'], 1)
 
     def testInclude(self):
         try:
             self.dict.read_dictionary(StringIO(
-                    '$INCLUDE this_file_does_not_exist\n'
-                    'VENDOR Simplon 42\n'
-                    'BEGIN-VENDOR Simplon\n'
-                    'END-VENDOR Simplon\n'
-                    'ATTRIBUTE Test-Type 1 integer'))
+                '$INCLUDE this_file_does_not_exist\n'
+                'VENDOR Simplon 42\n'
+                'BEGIN-VENDOR Simplon\n'
+                'END-VENDOR Simplon\n'
+                'ATTRIBUTE Test-Type 1 integer'))
         except IOError as e:
             self.assertEqual('this_file_does_not_exist' in str(e), True)
         else:
@@ -316,7 +316,7 @@ class DictionaryParsingTests(unittest.TestCase):
 
     def testDictFilePostParse(self):
         f = DictFile(StringIO(
-                'VENDOR Simplon 42\n'))
+            'VENDOR Simplon 42\n'))
         for _ in f:
             pass
         self.assertEqual(f.file(), '')

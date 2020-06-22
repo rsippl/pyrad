@@ -4,10 +4,10 @@
 
 __docformat__ = "epytext en"
 
-from datetime import datetime
 import asyncio
 import logging
 import random
+from datetime import datetime
 
 from pyrad.packet import Packet, AuthPacket, AcctPacket, CoAPacket
 
@@ -33,7 +33,7 @@ class DatagramProtocolClient(asyncio.Protocol):
 
         self.timeout_future = None
 
-    async def __timeout_handler__(self):
+    async def _timeout_handler(self):
 
         try:
 
@@ -48,7 +48,8 @@ class DatagramProtocolClient(asyncio.Protocol):
                     secs = (req['send_date'] - now).seconds
                     if secs > self.timeout:
                         if req['retries'] == self.retries:
-                            self.logger.debug('[%s:%d] For request %d execute all retries', self.server, self.port, id)
+                            self.logger.debug('[%s:%d] For request %d execute all retries',
+                                              self.server, self.port, id)
                             req['future'].set_exception(
                                 TimeoutError('Timeout on Reply')
                             )
@@ -57,8 +58,9 @@ class DatagramProtocolClient(asyncio.Protocol):
                             # Send again packet
                             req['send_date'] = now
                             req['retries'] += 1
-                            self.logger.debug('[%s:%d] For request %d execute retry %d', self.server, self.port, id, req['retries'])
-                            self.transport.sendto(req['packet'].RequestPacket())
+                            self.logger.debug('[%s:%d] For request %d execute retry %d',
+                                              self.server, self.port, id, req['retries'])
+                            self.transport.sendto(req['packet'].create_raw_request())
                     elif next_weak_up > secs:
                         next_weak_up = secs
 
@@ -86,7 +88,7 @@ class DatagramProtocolClient(asyncio.Protocol):
         }
 
         # In queue packet raw on socket buffer
-        self.transport.sendto(packet.RequestPacket())
+        self.transport.sendto(packet.create_raw_request())
 
     def connection_made(self, transport):
         self.transport = transport
@@ -102,7 +104,7 @@ class DatagramProtocolClient(asyncio.Protocol):
         asyncio.set_event_loop(loop=self.client.loop)
         # Start asynchronous timer handler
         self.timeout_future = asyncio.ensure_future(
-            self.__timeout_handler__()
+            self._timeout_handler()
         )
         asyncio.set_event_loop(loop=pre_loop)
 
@@ -115,8 +117,7 @@ class DatagramProtocolClient(asyncio.Protocol):
         else:
             self.logger.info('[%s:%d] Transport closed', self.server, self.port)
 
-    # noinspection PyUnusedLocal
-    def datagram_received(self, data, addr):
+    def datagram_received(self, data, _):
         try:
             reply = Packet(packet=data, dict=self.client.dict)
 
@@ -127,12 +128,13 @@ class DatagramProtocolClient(asyncio.Protocol):
                 reply.dict = packet.dict
                 reply.secret = packet.secret
 
-                if packet.VerifyReply(reply, data):
+                if packet.verify_reply(reply, data):
                     req['future'].set_result(reply)
                     # Remove request for map
                     del self.pending_requests[reply.id]
                 else:
-                    self.logger.warn('[%s:%d] Ignore invalid reply for id %d. %s', self.server, self.port, reply.id)
+                    self.logger.warn('[%s:%d] Ignore invalid reply for id %d. %s', self.server,
+                                     self.port, reply.id)
             else:
                 self.logger.warn('[%s:%d] Ignore invalid reply: %s', self.server, self.port, data)
 
@@ -172,6 +174,7 @@ class ClientAsync:
     :ivar timeout: number of seconds to wait for an answer
     :type timeout: integer
     """
+
     # noinspection PyShadowingBuiltins
     def __init__(self, server, auth_port=1812, acct_port=1813,
                  coa_port=3799, secret=b'', dict=None,
@@ -294,7 +297,6 @@ class ClientAsync:
             loop=self.loop
         )
 
-    # noinspection SpellCheckingInspection
     async def deinitialize_transports(self, deinit_coa=True,
                                       deinit_auth=True,
                                       deinit_acct=True):
@@ -311,8 +313,7 @@ class ClientAsync:
             del self.protocol_acct
             self.protocol_acct = None
 
-    # noinspection PyPep8Naming
-    def CreateAuthPacket(self, **args):
+    def create_auth_packet(self, **args):
         """Create a new RADIUS packet.
         This utility function creates a new RADIUS packet which can
         be used to communicate with the RADIUS server this client
@@ -329,8 +330,7 @@ class ClientAsync:
                           id=self.protocol_auth.create_id(),
                           secret=self.secret, **args)
 
-    # noinspection PyPep8Naming
-    def CreateAcctPacket(self, **args):
+    def create_acct_packet(self, **args):
         """Create a new RADIUS packet.
         This utility function creates a new RADIUS packet which can
         be used to communicate with the RADIUS server this client
@@ -347,8 +347,7 @@ class ClientAsync:
                           dict=self.dict,
                           secret=self.secret, **args)
 
-    # noinspection PyPep8Naming
-    def CreateCoAPacket(self, **args):
+    def create_coa_packet(self, **args):
         """Create a new RADIUS packet.
         This utility function creates a new RADIUS packet which can
         be used to communicate with the RADIUS server this client
@@ -366,17 +365,14 @@ class ClientAsync:
                          dict=self.dict,
                          secret=self.secret, **args)
 
-    # noinspection PyPep8Naming
-    # noinspection PyShadowingBuiltins
-    def CreatePacket(self, id, **args):
+    def create_packet(self, id, **args):
         if not id:
             raise Exception('Missing mandatory packet id')
 
         return Packet(id=id, dict=self.dict,
                       secret=self.secret, **args)
 
-    # noinspection PyPep8Naming
-    def SendPacket(self, pkt):
+    def send_packet(self, pkt):
         """Send a packet to a RADIUS server.
 
         :param pkt: the packet to send

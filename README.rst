@@ -31,12 +31,12 @@ Here is an example of doing a authentication request::
                  dict=Dictionary("dictionary"))
 
     # create request
-    req = srv.CreateAuthPacket(code=PacketCode.ACCESS_REQUEST,
+    req = srv.create_auth_packet(code=PacketCode.ACCESS_REQUEST,
                                User_Name="wichert", NAS_Identifier="localhost")
-    req["User-Password"] = req.PwCrypt("password")
+    req["User-Password"] = req.pw_crypt("password")
 
     # send request
-    reply = srv.SendPacket(req)
+    reply = srv.send_packet(req)
 
     if reply.code == PacketCode.ACCESS_ACCEPT:
         print("access accepted")

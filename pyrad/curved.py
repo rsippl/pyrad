@@ -7,14 +7,17 @@
 
 __docformat__ = 'epytext en'
 
+# TODO rewrite using asyncio
+
+import sys
+
 from twisted.internet import protocol
 from twisted.internet import reactor
 from twisted.python import log
-import sys
+
 from pyrad import dictionary
 from pyrad import host
 from pyrad import packet
-
 from pyrad.packet import PacketCode
 
 
@@ -31,16 +34,16 @@ class RADIUS(host.Host, protocol.DatagramProtocol):
         host.Host.__init__(self, dict=dict)
         self.hosts = hosts
 
-    def processPacket(self, pkt):
+    def process_packet(self, pkt):
         pass
 
-    def createPacket(self, **kwargs):
+    def create_packet(self, **kwargs):
         raise NotImplementedError('Attempted to use a pure base class')
 
     def datagramReceived(self, datagram, source):
         host, port = source
         try:
-            pkt = self.CreatePacket(packet=datagram)
+            pkt = self.create_packet(packet=datagram)
         except packet.PacketError as err:
             log.msg('Dropping invalid packet: ' + str(err))
             return
@@ -51,29 +54,29 @@ class RADIUS(host.Host, protocol.DatagramProtocol):
 
         pkt.source = (host, port)
         try:
-            self.processPacket(pkt)
+            self.process_packet(pkt)
         except PacketError as err:
             log.msg('Dropping packet from %s: %s' % (host, str(err)))
 
 
 class RADIUSAccess(RADIUS):
-    def createPacket(self, **kwargs):
-        self.CreateAuthPacket(**kwargs)
+    def create_packet(self, **kwargs):
+        self.create_auth_packet(**kwargs)
 
-    def processPacket(self, pkt):
+    def process_packet(self, pkt):
         if pkt.code != PacketCode.ACCESS_REQUEST:
             raise PacketError(
-                    'non-ACCESS_REQUEST packet on authentication socket')
+                'non-ACCESS_REQUEST packet on authentication socket')
 
 
 class RADIUSAccounting(RADIUS):
-    def createPacket(self, **kwargs):
-        self.CreateAcctPacket(**kwargs)
+    def create_packet(self, **kwargs):
+        self.create_acct_packet(**kwargs)
 
-    def processPacket(self, pkt):
+    def process_packet(self, pkt):
         if pkt.code != PacketCode.ACCOUNTING_REQUEST:
             raise PacketError(
-                    'non-ACCOUNTING_REQUEST packet on authentication socket')
+                'non-ACCOUNTING_REQUEST packet on authentication socket')
 
 
 if __name__ == '__main__':

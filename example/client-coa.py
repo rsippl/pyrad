@@ -18,7 +18,7 @@ def print_attributes(packet):
 
 
 class FakeCoA(Server):
-    def HandleCoaPacket(self, packet):
+    def handle_coa_packet(self, packet):
         '''Accounting packet handler.
         Function that is called when a valid
         accounting packet has been received.
@@ -29,21 +29,21 @@ class FakeCoA(Server):
         print('Received a coa request %d' % packet.code)
         print_attributes(packet)
 
-        reply = self.CreateReplyPacket(packet)
+        reply = self.create_reply_packet(packet)
         # try ACK or NACK
         # reply.code = PacketCode.COA_NAK
         reply.code = PacketCode.COA_ACK
-        self.SendReplyPacket(packet.fd, reply)
+        self.send_reply_packet(packet.fd, reply)
 
-    def HandleDisconnectPacket(self, packet):
+    def handle_disconnect_packet(self, packet):
         print('Received a disconnect request %d' % packet.code)
         print_attributes(packet)
 
-        reply = self.CreateReplyPacket(packet)
+        reply = self.create_reply_packet(packet)
         # try ACK or NACK
         # reply.code = PacketCode.DISCONNECT_NAK
         reply.code = PacketCode.DISCONNECT_ACK
-        self.SendReplyPacket(packet.fd, reply)
+        self.send_reply_packet(packet.fd, reply)
 
 
 def main(path_to_dictionary, coa_port):
@@ -64,7 +64,7 @@ def main(path_to_dictionary, coa_port):
         'localhost')
 
     # start
-    coa.Run()
+    coa.run()
 
 
 if __name__ == '__main__':

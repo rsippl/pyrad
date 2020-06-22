@@ -19,41 +19,41 @@ def print_attributes(packet):
 
 
 class FakeServer(server.Server):
-    def HandleAuthPacket(self, packet):
+    def handle_auth_packet(self, packet):
         print('Received an authentication request')
         print_attributes(packet)
 
-        reply = self.CreateReplyPacket(packet, **{
+        reply = self.create_reply_packet(packet, **{
             'Service-Type': 'Framed-User',
             'Framed-IP-Address': '192.168.0.1',
             'Framed-IPv6-Prefix': 'fc66::/64'
         })
 
         reply.code = PacketCode.ACCESS_ACCEPT
-        self.SendReplyPacket(packet.fd, reply)
+        self.send_reply_packet(packet.fd, reply)
 
-    def HandleAcctPacket(self, packet):
+    def handle_acct_packet(self, packet):
         print('Received an accounting request')
         print_attributes(packet)
 
-        reply = self.CreateReplyPacket(packet)
-        self.SendReplyPacket(packet.fd, reply)
+        reply = self.create_reply_packet(packet)
+        self.send_reply_packet(packet.fd, reply)
 
-    def HandleCoaPacket(self, packet):
+    def handle_coa_packet(self, packet):
         print('Received an coa request')
         print_attributes(packet)
 
-        reply = self.CreateReplyPacket(packet)
-        self.SendReplyPacket(packet.fd, reply)
+        reply = self.create_reply_packet(packet)
+        self.send_reply_packet(packet.fd, reply)
 
-    def HandleDisconnectPacket(self, packet):
+    def handle_disconnect_packet(self, packet):
         print('Received an disconnect request')
         print_attributes(packet)
 
-        reply = self.CreateReplyPacket(packet)
+        reply = self.create_reply_packet(packet)
         # COA NAK
         reply.code = 45
-        self.SendReplyPacket(packet.fd, reply)
+        self.send_reply_packet(packet.fd, reply)
 
 
 def main(path_to_dictionary):
@@ -66,10 +66,10 @@ def main(path_to_dictionary):
             '127.0.0.1',
             b'Kah3choteereethiejeimaeziecumi',
             'localhost')
-    srv.BindToAddress('0.0.0.0')
+    srv.bind_to_address('0.0.0.0')
 
     # start server
-    srv.Run()
+    srv.run()
 
 
 if __name__ == '__main__':

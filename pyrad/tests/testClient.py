@@ -1,10 +1,11 @@
 import select
 import socket
 import unittest
+
 from pyrad.client import Client
 from pyrad.client import Timeout
-from pyrad.packet import AuthPacket
 from pyrad.packet import AcctPacket
+from pyrad.packet import AuthPacket
 from pyrad.packet import PacketCode
 from pyrad.tests.mock import MockPacket
 from pyrad.tests.mock import MockPoll
@@ -60,9 +61,9 @@ class SocketTests(unittest.TestCase):
         socket.socket = self.orgsocket
 
     def testReopen(self):
-        self.client._SocketOpen()
+        self.client._open_socket()
         sock = self.client._socket
-        self.client._SocketOpen()
+        self.client._open_socket()
         self.failUnless(sock is self.client._socket)
 
     def testBind(self):
@@ -83,26 +84,26 @@ class SocketTests(unittest.TestCase):
             self._mock_pkt = pkt
             self._mock_port = port
 
-        _SendPacket = Client._SendPacket
-        Client._SendPacket = MockSend
+        _send_packet = Client._send_packet
+        Client._send_packet = MockSend
 
-        self.client.SendPacket(AuthPacket())
+        self.client.send_packet(AuthPacket())
         self.assertEqual(self.client._mock_port, self.client.authport)
 
-        self.client.SendPacket(AcctPacket())
+        self.client.send_packet(AcctPacket())
         self.assertEqual(self.client._mock_port, self.client.acctport)
 
-        Client._SendPacket = _SendPacket
+        Client._send_packet = _send_packet
 
     def testNoRetries(self):
         self.client.retries = 0
-        self.assertRaises(Timeout, self.client._SendPacket, None, None)
+        self.assertRaises(Timeout, self.client._send_packet, None, None)
 
     def testSingleRetry(self):
         self.client.retries = 1
         self.client.timeout = 0
         packet = MockPacket(PacketCode.ACCESS_REQUEST)
-        self.assertRaises(Timeout, self.client._SendPacket, packet, 432)
+        self.assertRaises(Timeout, self.client._send_packet, packet, 432)
         self.assertEqual(self.client._socket.output,
                          [("request packet", (self.server, 432))])
 
@@ -110,7 +111,7 @@ class SocketTests(unittest.TestCase):
         self.client.retries = 2
         self.client.timeout = 0
         packet = MockPacket(PacketCode.ACCESS_REQUEST)
-        self.assertRaises(Timeout, self.client._SendPacket, packet, 432)
+        self.assertRaises(Timeout, self.client._send_packet, packet, 432)
         self.assertEqual(
             self.client._socket.output,
             [("request packet", (self.server, 432)),
@@ -120,21 +121,21 @@ class SocketTests(unittest.TestCase):
         self.client.retries = 2
         self.client.timeout = 1
         packet = MockPacket(PacketCode.ACCESS_REQUEST)
-        self.assertRaises(Timeout, self.client._SendPacket, packet, 432)
+        self.assertRaises(Timeout, self.client._send_packet, packet, 432)
         self.failIf("Acct-Delay-Time" in packet)
 
     def testSingleAccountDelay(self):
         self.client.retries = 2
         self.client.timeout = 1
         packet = MockPacket(PacketCode.ACCOUNTING_REQUEST)
-        self.assertRaises(Timeout, self.client._SendPacket, packet, 432)
+        self.assertRaises(Timeout, self.client._send_packet, packet, 432)
         self.assertEqual(packet["Acct-Delay-Time"], [1])
 
     def testDoubleAccountDelay(self):
         self.client.retries = 3
         self.client.timeout = 1
         packet = MockPacket(PacketCode.ACCOUNTING_REQUEST)
-        self.assertRaises(Timeout, self.client._SendPacket, packet, 432)
+        self.assertRaises(Timeout, self.client._send_packet, packet, 432)
         self.assertEqual(packet["Acct-Delay-Time"], [2])
 
     def testIgnorePacketError(self):
@@ -142,7 +143,7 @@ class SocketTests(unittest.TestCase):
         self.client.timeout = 1
         self.client._socket = MockSocket(1, 2, b"valid reply")
         packet = MockPacket(PacketCode.ACCOUNTING_REQUEST, verify=True, error=True)
-        self.assertRaises(Timeout, self.client._SendPacket, packet, 432)
+        self.assertRaises(Timeout, self.client._send_packet, packet, 432)
 
     def testValidReply(self):
         self.client.retries = 1
@@ -151,7 +152,7 @@ class SocketTests(unittest.TestCase):
         self.client._poll = MockPoll()
         MockPoll.results = [(1, select.POLLIN)]
         packet = MockPacket(PacketCode.ACCOUNTING_REQUEST, verify=True)
-        reply = self.client._SendPacket(packet, 432)
+        reply = self.client._send_packet(packet, 432)
         self.failUnless(reply is packet.reply)
 
     def testInvalidReply(self):
@@ -160,7 +161,7 @@ class SocketTests(unittest.TestCase):
         self.client._socket = MockSocket(1, 2, b"invalid reply")
         MockPoll.results = [(1, select.POLLIN)]
         packet = MockPacket(PacketCode.ACCOUNTING_REQUEST, verify=False)
-        self.assertRaises(Timeout, self.client._SendPacket, packet, 432)
+        self.assertRaises(Timeout, self.client._send_packet, packet, 432)
 
 
 class OtherTests(unittest.TestCase):
@@ -169,14 +170,14 @@ class OtherTests(unittest.TestCase):
         self.client = Client(self.server, secret=b'zeer geheim')
 
     def testCreateAuthPacket(self):
-        packet = self.client.CreateAuthPacket(id=15)
+        packet = self.client.create_auth_packet(id=15)
         self.failUnless(isinstance(packet, AuthPacket))
         self.failUnless(packet.dict is self.client.dict)
         self.assertEqual(packet.id, 15)
         self.assertEqual(packet.secret, b'zeer geheim')
 
     def testCreateAcctPacket(self):
-        packet = self.client.CreateAcctPacket(id=15)
+        packet = self.client.create_acct_packet(id=15)
         self.failUnless(isinstance(packet, AcctPacket))
         self.failUnless(packet.dict is self.client.dict)
         self.assertEqual(packet.id, 15)
