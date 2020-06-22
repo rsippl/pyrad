@@ -2,18 +2,16 @@
 import random
 import socket
 import sys
-
 from os import path
 
 import pyrad.packet
-
 from pyrad.client import Client
 from pyrad.dictionary import Dictionary
 
 
-def send_accounting_packet(srv, req):
+def send_accounting_packet(client, req):
     try:
-        srv.send_packet(req)
+        client.send_packet(req)
     except pyrad.client.Timeout:
         print('RADIUS server does not reply')
         sys.exit(1)
@@ -23,11 +21,11 @@ def send_accounting_packet(srv, req):
 
 
 def main(path_to_dictionary):
-    srv = Client(server='127.0.0.1',
-                 secret=b'Kah3choteereethiejeimaeziecumi',
-                 dict=Dictionary(path_to_dictionary))
+    client = Client(server='127.0.0.1',
+                    secret=b'Kah3choteereethiejeimaeziecumi',
+                    dict=Dictionary(path_to_dictionary))
 
-    req = srv.create_acct_packet(**{
+    req = client.create_acct_packet(**{
         'User-Name': 'wichert',
         'NAS-IP-Address': '192.168.1.10',
         'NAS-Port': 0,
@@ -39,15 +37,15 @@ def main(path_to_dictionary):
 
     print('Sending accounting start packet')
     req['Acct-Status-Type'] = 'Start'
-    send_accounting_packet(srv, req)
+    send_accounting_packet(client, req)
 
     print('Sending accounting stop packet')
     req['Acct-Status-Type'] = 'Stop'
-    req['Acct-Input-Octets'] = random.randrange(2**10, 2**30)
-    req['Acct-Output-Octets'] = random.randrange(2**10, 2**30)
+    req['Acct-Input-Octets'] = random.randrange(2 ** 10, 2 ** 30)
+    req['Acct-Output-Octets'] = random.randrange(2 ** 10, 2 ** 30)
     req['Acct-Session-Time'] = random.randrange(120, 3600)
     req['Acct-Terminate-Cause'] = random.choice(['User-Request', 'Idle-Timeout'])
-    send_accounting_packet(srv, req)
+    send_accounting_packet(client, req)
 
 
 if __name__ == '__main__':

@@ -11,12 +11,12 @@ from pyrad.packet import PacketCode
 
 
 def main(path_to_dictionary):
-    srv = Client(server='localhost',
-                 authport=18121,
-                 secret=b'test',
-                 dict=Dictionary(path_to_dictionary))
+    client = Client(server='localhost',
+                    authport=18121,
+                    secret=b'test',
+                    dict=Dictionary(path_to_dictionary))
 
-    req = srv.create_auth_packet(
+    req = client.create_auth_packet(
         code=PacketCode.STATUS_SERVER,
         FreeRADIUS_Statistics_Type='All',
     )
@@ -24,7 +24,7 @@ def main(path_to_dictionary):
 
     try:
         print('Sending FreeRADIUS status request')
-        reply = srv.send_packet(req)
+        reply = client.send_packet(req)
     except pyrad.client.Timeout:
         print('RADIUS server does not reply')
         sys.exit(1)

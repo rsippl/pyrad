@@ -27,16 +27,16 @@ Here is an example of doing a authentication request::
     from pyrad.dictionary import Dictionary
     from pyrad.packet import PacketCode
 
-    srv = Client(server="localhost", secret=b"Kah3choteereethiejeimaeziecumi",
-                 dict=Dictionary("dictionary"))
+    client = Client(server="localhost", secret=b"Kah3choteereethiejeimaeziecumi",
+                    dict=Dictionary("dictionary"))
 
     # create request
-    req = srv.create_auth_packet(code=PacketCode.ACCESS_REQUEST,
-                               User_Name="wichert", NAS_Identifier="localhost")
+    req = client.create_auth_packet(code=PacketCode.ACCESS_REQUEST,
+                                    User_Name="wichert", NAS_Identifier="localhost")
     req["User-Password"] = req.pw_crypt("password")
 
     # send request
-    reply = srv.send_packet(req)
+    reply = client.send_packet(req)
 
     if reply.code == PacketCode.ACCESS_ACCEPT:
         print("access accepted")

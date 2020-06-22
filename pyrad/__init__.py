@@ -10,22 +10,22 @@ Here is an example of doing a authentication request::
   from pyrad.client import Client
   from pyrad.dictionary import Dictionary
 
-  srv = Client(server="radius.my.domain", secret="s3cr3t",
-    dict = Dictionary("dicts/dictionary", "dictionary.acc"))
+  client = Client(server="radius.my.domain", secret="s3cr3t",
+  dict = Dictionary("dicts/dictionary", "dictionary.acc"))
 
-  req = srv.create_packet(code=PacketCode.ACCESS_REQUEST,
-        User_Name = "wichert", NAS_Identifier="localhost")
+  req = client.create_packet(code=PacketCode.ACCESS_REQUEST,
+                             User_Name = "wichert", NAS_Identifier="localhost")
   req["User-Password"] = req.pw_crypt("password")
 
-  reply = srv.send_packet(req)
+  reply = client.send_packet(req)
   if reply.code = =pyrad.packet.ACCESS_ACCEPT:
       print "access accepted"
   else:
       print "access denied"
 
   print "Attributes returned by server:"
-  for key, value in reply.items():
-      print f'{key}: {value}')
+  for key in reply.keys():
+      print("{key}: {reply[key]}")
 
 
 This package contains four modules:

@@ -10,11 +10,11 @@ from pyrad.packet import PacketCode
 
 
 def main(path_to_dictionary):
-    srv = Client(server='127.0.0.1',
-                 secret=b'Kah3choteereethiejeimaeziecumi',
-                 dict=Dictionary(path_to_dictionary))
+    client = Client(server='127.0.0.1',
+                    secret=b'Kah3choteereethiejeimaeziecumi',
+                    dict=Dictionary(path_to_dictionary))
 
-    req = srv.create_auth_packet(
+    req = client.create_auth_packet(
         code=PacketCode.ACCESS_REQUEST,
         **{
             'User-Name': 'wichert',
@@ -29,7 +29,7 @@ def main(path_to_dictionary):
 
     try:
         print('Sending authentication request')
-        reply = srv.send_packet(req)
+        reply = client.send_packet(req)
     except Timeout:
         print('RADIUS server does not reply')
         sys.exit(1)
