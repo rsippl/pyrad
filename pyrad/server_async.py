@@ -68,13 +68,13 @@ class DatagramProtocolServer(asyncio.Protocol):
 
         try:
             if req.code in (
-                    PacketCode.AccountingResponse, PacketCode.AccessAccept, PacketCode.AccessReject,
-                    PacketCode.CoANAK, PacketCode.CoAACK, PacketCode.DisconnectNAK,
-                    PacketCode.DisconnectACK):
+                    PacketCode.ACCOUNTING_RESPONSE, PacketCode.ACCESS_ACCEPT, PacketCode.ACCESS_REJECT,
+                    PacketCode.COA_NAK, PacketCode.COA_ACK, PacketCode.DISCONNECT_NAK,
+                    PacketCode.DISCONNECT_ACK):
                 raise ServerPacketError(f'Invalid response packet {req.code}')
 
             elif self.server_type == ServerType.Auth:
-                if req.code != PacketCode.AccessRequest:
+                if req.code != PacketCode.ACCESS_REQUEST:
                     raise ServerPacketError('Received non-auth packet on auth port')
                 req = AuthPacket(secret=remote_host.secret,
                                  dict=self.server.dict,
@@ -84,7 +84,7 @@ class DatagramProtocolServer(asyncio.Protocol):
                         raise PacketError('Packet verification failed')
 
             elif self.server_type == ServerType.Coa:
-                if req.code != PacketCode.DisconnectRequest and req.code != PacketCode.CoARequest:
+                if req.code != PacketCode.DISCONNECT_REQUEST and req.code != PacketCode.COA_REQUEST:
                     raise ServerPacketError('Received non-coa packet on coa port')
                 req = CoAPacket(secret=remote_host.secret,
                                 dict=self.server.dict,
@@ -95,7 +95,7 @@ class DatagramProtocolServer(asyncio.Protocol):
 
             elif self.server_type == ServerType.Acct:
 
-                if req.code != PacketCode.AccountingRequest:
+                if req.code != PacketCode.ACCOUNTING_REQUEST:
                     raise ServerPacketError('Received non-acct packet on acct port')
                 req = AcctPacket(secret=remote_host.secret,
                                  dict=self.server.dict,
@@ -175,10 +175,10 @@ class ServerAsync(metaclass=ABCMeta):
             elif protocol.server_type == ServerType.Auth:
                 self.handle_auth_packet(protocol, req, addr)
             elif protocol.server_type == ServerType.Coa and \
-                    req.code == PacketCode.CoARequest:
+                    req.code == PacketCode.COA_REQUEST:
                 self.handle_coa_packet(protocol, req, addr)
             elif protocol.server_type == ServerType.Coa and \
-                    req.code == PacketCode.DisconnectRequest:
+                    req.code == PacketCode.DISCONNECT_REQUEST:
                 self.handle_disconnect_packet(protocol, req, addr)
             else:
                 self.logger.error('[%s:%s] Unexpected request found', protocol.ip, protocol.port)

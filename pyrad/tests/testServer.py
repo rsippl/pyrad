@@ -155,7 +155,7 @@ class AuthPacketHandlingTests(unittest.TestCase):
         self.server.hosts['host'] = TrivialObject()
         self.server.hosts['host'].secret = 'supersecret'
         self.packet = TrivialObject()
-        self.packet.code = PacketCode.AccessRequest
+        self.packet.code = PacketCode.ACCESS_REQUEST
         self.packet.source = ('host', 'port')
 
     def testHandleAuthPacketUnknownHost(self):
@@ -168,7 +168,7 @@ class AuthPacketHandlingTests(unittest.TestCase):
             self.fail()
 
     def testHandleAuthPacketWrongPort(self):
-        self.packet.code = PacketCode.AccountingRequest
+        self.packet.code = PacketCode.ACCOUNTING_REQUEST
         try:
             self.server._HandleAuthPacket(self.packet)
         except ServerPacketError as e:
@@ -194,7 +194,7 @@ class AcctPacketHandlingTests(unittest.TestCase):
         self.server.hosts['host'] = TrivialObject()
         self.server.hosts['host'].secret = 'supersecret'
         self.packet = TrivialObject()
-        self.packet.code = PacketCode.AccountingRequest
+        self.packet.code = PacketCode.ACCOUNTING_REQUEST
         self.packet.source = ('host', 'port')
 
     def testHandleAcctPacketUnknownHost(self):
@@ -207,7 +207,7 @@ class AcctPacketHandlingTests(unittest.TestCase):
             self.fail()
 
     def testHandleAcctPacketWrongPort(self):
-        self.packet.code = PacketCode.AccessRequest
+        self.packet.code = PacketCode.ACCESS_REQUEST
         try:
             self.server._HandleAcctPacket(self.packet)
         except ServerPacketError as e:

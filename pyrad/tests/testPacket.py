@@ -392,7 +392,7 @@ class AuthPacketConstructionTests(PacketConstructionTests):
 
     def testConstructorDefaults(self):
         pkt = self.klass()
-        self.assertEqual(pkt.code, PacketCode.AccessRequest)
+        self.assertEqual(pkt.code, PacketCode.ACCESS_REQUEST)
 
 
 class AuthPacketTests(unittest.TestCase):
@@ -405,7 +405,7 @@ class AuthPacketTests(unittest.TestCase):
 
     def testCreateReply(self):
         reply = self.packet.CreateReply(**{'Test-Integer': 10})
-        self.assertEqual(reply.code, PacketCode.AccessAccept)
+        self.assertEqual(reply.code, PacketCode.ACCESS_ACCEPT)
         self.assertEqual(reply.id, self.packet.id)
         self.assertEqual(reply.secret, self.packet.secret)
         self.assertEqual(reply.authenticator, self.packet.authenticator)
@@ -459,7 +459,7 @@ class AuthPacketChapTests(unittest.TestCase):
         chap_password = chap_id + md5_constructor(
                 chap_id + b'test_password' + chap_challenge).digest()
         pkt = self.client.CreateAuthPacket(
-            code=PacketCode.AccessChallenge,
+            code=PacketCode.ACCESS_CHALLENGE,
             authenticator=b'ABCDEFG',
             User_Name='test_name',
             CHAP_Challenge=chap_challenge,
@@ -488,7 +488,7 @@ class AcctPacketConstructionTests(PacketConstructionTests):
 
     def testConstructorDefaults(self):
         pkt = self.klass()
-        self.assertEqual(pkt.code, PacketCode.AccountingRequest)
+        self.assertEqual(pkt.code, PacketCode.ACCOUNTING_REQUEST)
 
     def testConstructorRawPacket(self):
         raw = (b'\x00\x00\x00\x14\xb0\x5e\x4b\xfb\xcc\x1c'
@@ -507,7 +507,7 @@ class AcctPacketTests(unittest.TestCase):
 
     def testCreateReply(self):
         reply = self.packet.CreateReply(**{'Test-Integer': 10})
-        self.assertEqual(reply.code, PacketCode.AccountingResponse)
+        self.assertEqual(reply.code, PacketCode.ACCOUNTING_RESPONSE)
         self.assertEqual(reply.id, self.packet.id)
         self.assertEqual(reply.secret, self.packet.secret)
         self.assertEqual(reply.authenticator, self.packet.authenticator)

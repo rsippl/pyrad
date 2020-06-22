@@ -17,20 +17,20 @@ md5_constructor = hashlib.md5
 
 
 class PacketCode(IntEnum):
-    AccessRequest = 1
-    AccessAccept = 2
-    AccessReject = 3
-    AccountingRequest = 4
-    AccountingResponse = 5
-    AccessChallenge = 11
-    StatusServer = 12
-    StatusClient = 13
-    DisconnectRequest = 40
-    DisconnectACK = 41
-    DisconnectNAK = 42
-    CoARequest = 43
-    CoAACK = 44
-    CoANAK = 45
+    ACCESS_REQUEST = 1
+    ACCESS_ACCEPT = 2
+    ACCESS_REJECT = 3
+    ACCOUNTING_REQUEST = 4
+    ACCOUNTING_RESPONSE = 5
+    ACCESS_CHALLENGE = 11
+    STATUS_SERVER = 12
+    STATUS_CLIENT = 13
+    DISCONNECT_REQUEST = 40
+    DISCONNECT_ACK = 41
+    DISCONNECT_NAK = 42
+    COA_REQUEST = 43
+    COA_ACK = 44
+    COA_NAK = 45
 
 
 # Use cryptographic-safe random generator as provided by the OS.
@@ -117,7 +117,7 @@ class Packet(OrderedDict):
         if self.id is None:
             self.id = self.CreateID()
 
-        if self.authenticator is None and self.code == PacketCode.AccessRequest:
+        if self.authenticator is None and self.code == PacketCode.ACCESS_REQUEST:
             self.authenticator = self.CreateAuthenticator()
             self._refresh_message_authenticator()
 
@@ -136,16 +136,16 @@ class Packet(OrderedDict):
                              (20 + len(attr)))
 
         hmac_constructor.update(header[0:4])
-        if self.code in (PacketCode.AccountingRequest, PacketCode.DisconnectRequest,
-                         PacketCode.CoARequest, PacketCode.AccountingResponse):
+        if self.code in (PacketCode.ACCOUNTING_REQUEST, PacketCode.DISCONNECT_REQUEST,
+                         PacketCode.COA_REQUEST, PacketCode.ACCOUNTING_RESPONSE):
             hmac_constructor.update(16 * b'\00')
         else:
             # NOTE: self.authenticator on reply packet is initialized
             #       with request authenticator by design.
-            #       For AccessAccept, AccessReject and AccessChallenge
-            #       it is needed use original Authenticator.
-            #       For AccessAccept, AccessReject and AccessChallenge
-            #       it is needed use original Authenticator.
+            #       For ACCESS_ACCEPT, ACCESS_REJECT and ACCESS_CHALLENGE
+            #       it is needed to use original Authenticator.
+            #       For ACCESS_ACCEPT, ACCESS_REJECT and ACCESS_CHALLENGE
+            #       it is needed to use original Authenticator.
             if self.authenticator is None:
                 raise Exception('No authenticator found')
             hmac_constructor.update(self.authenticator)
@@ -182,13 +182,13 @@ class Packet(OrderedDict):
 
         hmac_constructor = hmac.new(key, digestmod=hashlib.md5)
         hmac_constructor.update(header)
-        if self.code in (PacketCode.AccountingRequest, PacketCode.DisconnectRequest,
-                         PacketCode.CoARequest, PacketCode.AccountingResponse):
-            if original_code is None or original_code != PacketCode.StatusServer:
+        if self.code in (PacketCode.ACCOUNTING_REQUEST, PacketCode.DISCONNECT_REQUEST,
+                         PacketCode.COA_REQUEST, PacketCode.ACCOUNTING_RESPONSE):
+            if original_code is None or original_code != PacketCode.STATUS_SERVER:
                 # TODO: Handle Status-Server response correctly.
                 hmac_constructor.update(16 * b'\00')
-        elif self.code in (PacketCode.AccessAccept, PacketCode.AccessChallenge,
-                           PacketCode.AccessReject):
+        elif self.code in (PacketCode.ACCESS_ACCEPT, PacketCode.ACCESS_CHALLENGE,
+                           PacketCode.ACCESS_REJECT):
             if original_authenticator is None:
                 if self.authenticator:
                     # NOTE: self.authenticator on reply packet is initialized
@@ -579,7 +579,7 @@ class Packet(OrderedDict):
 
 
 class AuthPacket(Packet):
-    def __init__(self, code=PacketCode.AccessRequest, id=None, secret=b'',
+    def __init__(self, code=PacketCode.ACCESS_REQUEST, id=None, secret=b'',
                  authenticator=None, auth_type='pap', **attributes):
         """Constructor
 
@@ -607,7 +607,7 @@ class AuthPacket(Packet):
         makes sure the authenticator and secret are copied over
         to the new instance.
         """
-        return AuthPacket(PacketCode.AccessAccept, self.id,
+        return AuthPacket(PacketCode.ACCESS_ACCEPT, self.id,
                           self.secret, self.authenticator, dict=self.dict,
                           auth_type=self.auth_type, **attributes)
 
@@ -749,7 +749,7 @@ class AcctPacket(Packet):
     of the generic :obj:`Packet` class for accounting packets.
     """
 
-    def __init__(self, code=PacketCode.AccountingRequest, id=None, secret=b'',
+    def __init__(self, code=PacketCode.ACCOUNTING_REQUEST, id=None, secret=b'',
                  authenticator=None, **attributes):
         """Constructor
 
@@ -773,7 +773,7 @@ class AcctPacket(Packet):
         makes sure the authenticator and secret are copied over
         to the new instance.
         """
-        return AcctPacket(PacketCode.AccountingResponse, self.id,
+        return AcctPacket(PacketCode.ACCOUNTING_RESPONSE, self.id,
                           self.secret, self.authenticator, dict=self.dict,
                           **attributes)
 
@@ -820,7 +820,7 @@ class CoAPacket(Packet):
     of the generic :obj:`Packet` class for CoA packets.
     """
 
-    def __init__(self, code=PacketCode.CoARequest, id=None, secret=b'',
+    def __init__(self, code=PacketCode.COA_REQUEST, id=None, secret=b'',
                  authenticator=None, **attributes):
         """Constructor
 
@@ -844,7 +844,7 @@ class CoAPacket(Packet):
         makes sure the authenticator and secret are copied over
         to the new instance.
         """
-        return CoAPacket(PacketCode.CoAACK, self.id,
+        return CoAPacket(PacketCode.COA_ACK, self.id,
                          self.secret, self.authenticator, dict=self.dict,
                          **attributes)
 

@@ -28,7 +28,7 @@ def main(path_to_dictionary, coa_type, nas_identifier):
     elif coa_type == 'dis':
         # create disconnect request
         request = client.CreateCoAPacket(
-            code=PacketCode.DisconnectRequest,
+            code=PacketCode.DISCONNECT_REQUEST,
             **attributes)
     else:
         sys.exit(1)

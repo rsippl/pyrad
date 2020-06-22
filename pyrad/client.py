@@ -142,7 +142,7 @@ class Client(host.Host):
         self._SocketOpen()
 
         for attempt in range(self.retries):
-            if attempt and pkt.code == PacketCode.AccountingRequest:
+            if attempt and pkt.code == PacketCode.ACCOUNTING_REQUEST:
                 if "Acct-Delay-Time" in pkt:
                     pkt["Acct-Delay-Time"] = \
                             pkt["Acct-Delay-Time"][0] + self.timeout
@@ -196,7 +196,7 @@ class Client(host.Host):
             reply = self._SendPacket(pkt, self.authport)
             if (
                 reply
-                and reply.code == PacketCode.AccessChallenge
+                and reply.code == PacketCode.ACCESS_CHALLENGE
                 and pkt.auth_type == 'eap-md5'
             ):
                 # Got an Access-Challenge

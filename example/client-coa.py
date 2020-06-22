@@ -31,8 +31,8 @@ class FakeCoA(Server):
 
         reply = self.CreateReplyPacket(packet)
         # try ACK or NACK
-        # reply.code = PacketCode.CoANAK
-        reply.code = PacketCode.CoAACK
+        # reply.code = PacketCode.COA_NAK
+        reply.code = PacketCode.COA_ACK
         self.SendReplyPacket(packet.fd, reply)
 
     def HandleDisconnectPacket(self, packet):
@@ -41,8 +41,8 @@ class FakeCoA(Server):
 
         reply = self.CreateReplyPacket(packet)
         # try ACK or NACK
-        # reply.code = PacketCode.DisconnectNAK
-        reply.code = PacketCode.DisconnectACK
+        # reply.code = PacketCode.DISCONNECT_NAK
+        reply.code = PacketCode.DISCONNECT_ACK
         self.SendReplyPacket(packet.fd, reply)
 
 

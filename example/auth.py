@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 import socket
 import sys
-
 from os import path
 
 from pyrad.client import Client, Timeout
@@ -15,7 +14,7 @@ def main(path_to_dictionary):
                  dict=Dictionary(path_to_dictionary))
 
     req = srv.CreateAuthPacket(
-        code=PacketCode.AccessRequest,
+        code=PacketCode.ACCESS_REQUEST,
         **{
             'User-Name': 'wichert',
             'NAS-IP-Address': '192.168.1.10',
@@ -37,7 +36,7 @@ def main(path_to_dictionary):
         print('Network error: ' + error[1])
         sys.exit(1)
 
-    if reply.code == PacketCode.AccessAccept:
+    if reply.code == PacketCode.ACCESS_ACCEPT:
         print('Access accepted')
     else:
         print('Access denied')

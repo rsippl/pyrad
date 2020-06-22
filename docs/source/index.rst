@@ -17,20 +17,20 @@ Here is an example of doing a authentication request::
 
     from pyrad.client import Client
     from pyrad.dictionary import Dictionary
-    import pyrad.packet
+    from pyrad.packet import PacketCode
 
     srv = Client(server="localhost", secret=b"Kah3choteereethiejeimaeziecumi",
                  dict=Dictionary("dictionary"))
 
     # create request
-    req = srv.CreateAuthPacket(code=pyrad.packet.AccessRequest,
+    req = srv.CreateAuthPacket(code=PacketCode.ACCESS_REQUEST,
                                User_Name="wichert", NAS_Identifier="localhost")
     req["User-Password"] = req.PwCrypt("password")
 
     # send request
     reply = srv.SendPacket(req)
 
-    if reply.code == pyrad.packet.AccessAccept:
+    if reply.code == PacketCode.ACCESS_ACCEPT:
         print("access accepted")
     else:
         print("access denied")

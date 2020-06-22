@@ -29,7 +29,7 @@ class FakeServer(server.Server):
             'Framed-IPv6-Prefix': 'fc66::/64'
         })
 
-        reply.code = PacketCode.AccessAccept
+        reply.code = PacketCode.ACCESS_ACCEPT
         self.SendReplyPacket(packet.fd, reply)
 
     def HandleAcctPacket(self, packet):

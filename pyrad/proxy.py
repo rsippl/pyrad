@@ -41,8 +41,8 @@ class Proxy(Server):
             raise ServerPacketError('Received packet from unknown host')
         pkt.secret = self.hosts[pkt.source[0]].secret
 
-        if pkt.code not in [PacketCode.AccessAccept, PacketCode.AccessReject,
-                            PacketCode.AccountingResponse]:
+        if pkt.code not in [PacketCode.ACCESS_ACCEPT, PacketCode.ACCESS_REJECT,
+                            PacketCode.ACCOUNTING_RESPONSE]:
             raise ServerPacketError('Received non-response on proxy socket')
 
     def _ProcessInput(self, fd):

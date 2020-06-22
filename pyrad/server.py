@@ -215,7 +215,7 @@ class Server(host.Host):
         :type  pkt: Packet class instance
         """
         self._AddSecret(pkt)
-        if pkt.code != PacketCode.AccessRequest:
+        if pkt.code != PacketCode.ACCESS_REQUEST:
             raise ServerPacketError(
                 'Received non-authentication packet on authentication port')
         self.HandleAuthPacket(pkt)
@@ -230,8 +230,8 @@ class Server(host.Host):
         :type  pkt: Packet class instance
         """
         self._AddSecret(pkt)
-        if pkt.code not in [PacketCode.AccountingRequest,
-                            PacketCode.AccountingResponse]:
+        if pkt.code not in [PacketCode.ACCOUNTING_REQUEST,
+                            PacketCode.ACCOUNTING_RESPONSE]:
             raise ServerPacketError(
                     'Received non-accounting packet on accounting port')
         self.HandleAcctPacket(pkt)
@@ -247,9 +247,9 @@ class Server(host.Host):
         """
         self._AddSecret(pkt)
         pkt.secret = self.hosts[pkt.source[0]].secret
-        if pkt.code == PacketCode.CoARequest:
+        if pkt.code == PacketCode.COA_REQUEST:
             self.HandleCoaPacket(pkt)
-        elif pkt.code == PacketCode.DisconnectRequest:
+        elif pkt.code == PacketCode.DISCONNECT_REQUEST:
             self.HandleDisconnectPacket(pkt)
         else:
             raise ServerPacketError('Received non-coa packet on coa port')

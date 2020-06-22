@@ -42,7 +42,7 @@ class ProxyPacketHandlingTests(unittest.TestCase):
         self.proxy.hosts['host'] = TrivialObject()
         self.proxy.hosts['host'].secret = 'supersecret'
         self.packet = TrivialObject()
-        self.packet.code = PacketCode.AccessAccept
+        self.packet.code = PacketCode.ACCESS_ACCEPT
         self.packet.source = ('host', 'port')
 
     def testHandleProxyPacketUnknownHost(self):
@@ -59,7 +59,7 @@ class ProxyPacketHandlingTests(unittest.TestCase):
         self.assertEqual(self.packet.secret, 'supersecret')
 
     def testHandleProxyPacketHandlesWrongPacket(self):
-        self.packet.code = PacketCode.AccessRequest
+        self.packet.code = PacketCode.ACCESS_REQUEST
         try:
             self.proxy._HandleProxyPacket(self.packet)
         except ServerPacketError as e:

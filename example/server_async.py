@@ -44,7 +44,7 @@ class FakeServer(ServerAsync):
             'Framed-IPv6-Prefix': 'fc66::/64'
         })
 
-        reply.code = PacketCode.AccessAccept
+        reply.code = PacketCode.ACCESS_ACCEPT
         protocol.send_response(reply, addr)
 
     def handle_acct_packet(self, protocol, packet, addr):

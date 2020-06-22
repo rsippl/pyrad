@@ -28,7 +28,7 @@ def create_request(client, user):
 
 
 def print_reply(reply):
-    if reply.code == PacketCode.AccessAccept:
+    if reply.code == PacketCode.ACCESS_ACCEPT:
         print('Access accepted')
     else:
         print('Access denied')

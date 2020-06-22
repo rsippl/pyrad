@@ -16,7 +16,7 @@ def main(path_to_dictionary):
                  dict=Dictionary(path_to_dictionary))
 
     req = srv.CreateAuthPacket(
-        code=PacketCode.StatusServer,
+        code=PacketCode.STATUS_SERVER,
         FreeRADIUS_Statistics_Type='All',
     )
     req.add_message_authenticator()
