@@ -1,7 +1,7 @@
 from pyrad import packet
 
 
-class Host(object):
+class Host:
     """Generic RADIUS capable host.
 
     :ivar     dict: RADIUS dictionary

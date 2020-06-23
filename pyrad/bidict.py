@@ -1,7 +1,7 @@
 # Bidirectional map
 
 
-class BiDict():
+class BiDict:
     def __init__(self):
         self.forward = {}
         self.backward = {}

@@ -100,7 +100,7 @@ class ParseError(Exception):
         return f'{self.file}{line}: ParseError: {self.msg}'
 
 
-class Attribute():
+class Attribute:
     def __init__(self, name, code, datatype, is_sub_attribute=False, vendor='', values=None,
                  encrypt=0, has_tag=False):
         if datatype not in DATATYPES:
@@ -120,7 +120,7 @@ class Attribute():
                 self.values.add(key, value)
 
 
-class Dictionary():
+class Dictionary:
     """RADIUS dictionary class.
     This class stores all information about vendors, attributes and their
     values as defined in RADIUS dictionary files.
